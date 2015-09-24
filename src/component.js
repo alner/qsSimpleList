@@ -23,7 +23,7 @@ define(dependencies,
       context.paint = method;
       context.paint(...args);
     };
-    // load into global context required libraries, using provided "map" object
+    // load into the global context required libraries using provided "map" object
     const lazyLoad = lazyLoader(global,
       global.require,
       DEPENDENCIES_TO_LOAD,
