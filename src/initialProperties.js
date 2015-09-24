@@ -3,6 +3,7 @@ export default {
   showTitles: true,
   qListObjectDef : {
     qShowAlternatives : true,
+    qFrequencyMode : "V",
     qDef: {
       qSortCriterias : [
         {
@@ -21,7 +22,7 @@ export default {
 
     qInitialDataFetch : [{
         qWidth : 1,
-        qHeight : 50
+        qHeight : 1000
     }],
   },
 

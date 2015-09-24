@@ -7,21 +7,25 @@ export default class ButtonComponent extends React.Component {
       var width = this.props.width;
       var renderAs = this.props.renderAs;
       var itemsLayout = this.props.itemsLayout;
-      var className = (this.props.isSelected ? "qui-button-selected qirby-button-selected "  : "qui-button qirby-button");
+      var className = (this.props.isSelected ? "qui-button-selected"  : "qui-button");
 
-      var cStyle = {width: "100%"};
+      var cStyle = {};
       var itemStyle;
       if(itemsLayout === "h") {
         // Horizontal buttons
         itemStyle = {
+        //"width": "auto",
         "float": "left",
-          "borderRadius": "0px"
+        "borderRadius": "0px",
+        "overflow": "hidden"
         };
       } else {
         // Vertical buttons
         itemStyle = {
+          "clear": "both",
           "borderRadius": "0px",
-          "width": "100%"
+          "width": "100%",
+          "overflow": "hidden"
         };
       }
 
@@ -36,7 +40,17 @@ export default class ButtonComponent extends React.Component {
         itemStyle.width = width;
       }
 
-      return (<div style={cStyle}><button data-value={data} className={className} style={itemStyle} title={text}>{text}</button></div>);
+      return (
+        <div style={cStyle}>
+            <button
+              data-value={data}
+              className={className}
+              style={itemStyle}
+              title={text}>
+              {text}
+            </button>
+        </div>
+      );
     }
   };
 

@@ -2,12 +2,17 @@ import Renderers from './renderers';
 
 export default class SelectComponent extends React.Component {
     render() {
-      // todo multiple support
-      // value={this.props.selectedValues}
+      var width = this.props.itemWidth;
       var style = {
         width: "100%"
       };
-      return (<select onChange={this.props.changeHandler} className={'qui-select qirby-select'} style={style}>{this.props.children}</select>);
+      //console.log(this.props.selectedValues);
+      let selectedValue = "";
+      if(this.props.selectedValues.length > 0)
+        selectedValue = this.props.selectedValues[0];
+
+      if(width) style.width = width;
+      return (<select onChange={this.props.changeHandler} value={selectedValue} className={'qui-select qirby-select'} style={style}>{this.props.children}</select>);
     }
 };
 
@@ -16,9 +21,8 @@ class OptionComponent extends React.Component {
       var data = this.props.data;
       var text = this.props.text;
       var isSelected = this.props.isSelected;
-      // selected={isSelected}
-      // data-value={data}
-      return (<option value={data} data-value={data} selected={isSelected}>{text}</option>);
+      // selected={isSelected} see SelectComponent (value property)
+      return (<option value={data} data-value={data}>{text}</option>);
     }
 };
 

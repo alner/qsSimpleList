@@ -1,11 +1,14 @@
 export function lazyLoader(context, load, dependencies, callback) {
-    let keys = Object.keys(dependencies);
-    let deps = keys.map((key) => dependencies[key]);
+    let keys = Object.keys(dependencies).filter((key) => {return !context[key]});
+    let deps = keys.map((key) => {
+        return dependencies[key];
+    });
 
     return function(...args){
         load(deps, function(...libs) {
           keys.forEach((key, index) => {
-            context[key] = libs[index];
+            if(!context[key])
+              context[key] = libs[index];
           });
           callback(...args);
         });

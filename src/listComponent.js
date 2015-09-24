@@ -6,7 +6,7 @@ import CheckBoxComponent from './checkbox';
 import RadioButtonComponent from './radiobutton';
 import SelectComponent from './select';
 import SenseCheckBoxComponent from './senseCheckbox';
-import SenseRadioButtonComponent from './senseRadiobutton';
+//import SenseRadioButtonComponent from './senseRadiobutton';
 //"jsx!./multiselect.js"
 
 // Register default renderer
@@ -18,30 +18,35 @@ class ListComponent extends React.Component {
       this.state = {
         qSelected: {},
         qLastSelected: -1,
-        qLastField: ''
+        qLastField: '',
+        containerWidth: ''
       };
     }
 
     componentDidMount() {
-      var container = React.findDOMNode(this.refs.container);
-      if(container) $(container).on('tap', this.clickHandler);
-      //new Hammer(container).on("tap", this.clickHandler);
+      let container = React.findDOMNode(this.refs.container);
+      if(container) $(container).on('tap', this.clickHandler.bind(this));
+      this.recalcSize();
+    }
+
+    componentDidUpdate(){
+      this.recalcSize();
     }
 
     render() {
-        var self = this;
-        var selectedCount = 0;
-        var Renderer = Renderers.items.get(self.props.renderAs);
-        var Container = Renderers.containers.get(self.props.renderAs);
+        let self = this;
+        let selectedCount = 0;
+        let Renderer = Renderers.items.get(self.props.options.renderAs);
+        let Container = Renderers.containers.get(self.props.options.renderAs);
 
-        var selection = {};
-        var itemWidth = (self.props.itemsLayout === 'h' ? (100 / this.props.data.length) + '%' : '100%');
-        var items = this.props.data && this.props.data.map(function (row) {
-          var field = row[0];
-          var isSelected = field.qState === 'S'
+        let selection = {};
+        let itemWidth = self.state.containerWidth || (self.props.options.itemsLayout === 'h' ? (100 / (this.props.options.data.length)) + '%' : '100%');
+        let items = this.props.options.data && this.props.options.data.map(function (row) {
+          let field = row[0];
+          let isSelected =
+          field.qState === 'S'
           || field.qState === 'L';
           //|| field.qState === 'O';
-          //console.log(field.qState);
 
           if(isSelected) {
             ++selectedCount;
@@ -51,20 +56,119 @@ class ListComponent extends React.Component {
               self.state.qLastSelected = field.qElemNumber;
           }
 
-          return (<Renderer key={field.qElemNumber} data={field.qElemNumber} width={itemWidth} text={field.qText} isSelected={isSelected} renderAs={self.props.renderAs} selectionColor={self.props.selectionColor} itemsLayout={self.props.itemsLayout}/>);
+          return (<Renderer key={field.qElemNumber}
+            data={field.qElemNumber}
+            width={itemWidth}
+            text={field.qText}
+            isSelected={isSelected}
+            renderAs={self.props.options.renderAs}
+            selectionColor={self.props.options.selectionColor}
+            itemsLayout={self.props.options.itemsLayout}/>);
         });
 
         if(!_.isEqual(self.state.qSelected, selection))
           self.state.qSelected = selection;
 
-        if(this.props.alwaysOneSelected && selectedCount > 1) {
+        if(this.props.options.alwaysOneSelected && selectedCount > 1) {
           this.selectValues(this.selectedValuesCount() > 1); // select first if more then one selection
         }
 
+        let titleComponent;
+        if(!this.props.options.hideLabel) {
+          titleComponent = (
+            <div ref="title" className="title qvt-visualization-title">
+            {self.props.options.label}
+            </div>
+          );
+        }
+
+        let containerComponent;
         if(Container)
-          return (<Container changeHandler={this.clickHandler.bind(this)} selectedValues={this.getSelectedValues()} selectionColor={self.props.selectionColor}>{items}</Container>);
+          containerComponent = (
+            <Container ref="container" changeHandler={this.clickHandler.bind(this)}
+              selectedValues={this.getSelectedValues()}
+              itemWidth={itemWidth}
+              selectionColor={self.props.options.selectionColor}>
+            {items}
+            </Container>
+          );
         else
-          return (<form ref="container" onClick={this.clickHandler.bind(this)} style={{width: "100%", height: "100%", overflowX: "auto", overflowY: "auto"}}>{items}</form>);
+          containerComponent = (
+            <form ref="container"
+              onClick={this.clickHandler.bind(this)}>
+            {items}
+            </form>
+          );
+
+        return (
+          <div ref="main" className="qv-object-simple-list main">
+            {titleComponent}
+            {containerComponent}
+          </div>
+        );
+    }
+
+    recalcSize(){
+      if(this.props.options.renderAs === 'select') {
+        // select - special case
+        if(this.props.options.hideLabel) {
+          if(this.state.containerWidth !== '100%')
+            this.setState({
+              containerWidth: '100%'
+            });
+        } else {
+          let main = React.findDOMNode(this.refs.main);
+          let main$ = $(main);
+          let mainWidth = main$.innerWidth();
+          let container = React.findDOMNode(this.refs.container);
+          let container$ = $(container);
+          let containerPos = container$.offset();
+          let title = React.findDOMNode(this.refs.title);
+          let title$ = $(title);
+          let titleWidth = title$.width();
+          let titleHeight = title$.height();
+          let titlePos = title$.offset();
+          let itemWidth = `${mainWidth - titleWidth - 6}px`;
+          if(mainWidth - titleWidth <= 44
+          && titlePos.top + titleHeight < containerPos.top) {
+            itemWidth = '100%';
+          }
+          if(this.state.containerWidth !== itemWidth)
+            this.setState({
+              containerWidth: itemWidth
+            });
+        }
+      }
+      else
+      if(this.props.options.itemsLayout === 'h') {
+        let main = React.findDOMNode(this.refs.main);
+        let mainWidth = $(main).innerWidth();
+        let itemCount = this.props.options.data.length;
+
+        if(this.props.options.hideLabel) {
+          let itemWidth = `${Math.floor(100 / itemCount)}%`;
+          if(this.state.containerWidth !== itemWidth)
+            this.setState({
+              containerWidth: itemWidth
+            });
+        } else {
+            let title = React.findDOMNode(this.refs.title);
+            let titleWidth = $(title).width();
+            if(itemCount > 0) {
+              let itemWidth = `${Math.floor((mainWidth - titleWidth) / itemCount - 2)}px`;
+              if(this.state.containerWidth !== itemWidth)
+                this.setState({
+                  containerWidth: itemWidth
+                });
+            }
+        }
+      } else {
+        // vertical
+        if(this.state.containerWidth !== '')
+          this.setState({
+            containerWidth: ''
+          });
+      }
     }
 
     clickHandler(e, dummy, data) {
@@ -83,9 +187,9 @@ class ListComponent extends React.Component {
     }
 
     selectValues(selectFirst){
-      var qSelf = this.props.self;
-      var isLockSelection = this.props.lockSelection;
-      var fieldName = this.props.field;
+      var qSelf = this.props.options.self;
+      var isLockSelection = this.props.options.lockSelection;
+      var fieldName = this.props.options.field;
       var app = Qlik.currApp();
       var field = app.field(fieldName);
 
@@ -116,7 +220,7 @@ class ListComponent extends React.Component {
       var selected = self.state.qSelected;
       var lastSelected = self.state.qLastSelected;
 
-      if(self.props.alwaysOneSelected) {
+      if(self.props.options.alwaysOneSelected) {
         selected = {};
       }
       else {
@@ -130,10 +234,10 @@ class ListComponent extends React.Component {
 
       self.state.qSelected = selected;
 
-      if(self.props.alwaysOneSelected)
+      if(self.props.options.alwaysOneSelected)
         self.state.qLastSelected = value;
 
-      if(!(self.props.alwaysOneSelected && lastSelected == value))
+      if(!(self.props.options.alwaysOneSelected && lastSelected == value))
         self.selectValues();
 
       //qSelf.selectValues(dim, [value], true);

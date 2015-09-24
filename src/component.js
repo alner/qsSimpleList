@@ -1,14 +1,18 @@
+import loadCSS from './loadcss';
+
 const global = window;
 const define = global.define || define;
-const dependencies = ['module', 'css!./styles.css'];
-//  dependencies.push('./vendors/react.min');
+const dependencies = ['module']; // 'css!./styles.css' Using the RequireJS CSS plugin is supported as of Qlik Sense 2.0
 define(dependencies,
   function(module){
     const ROOT_URI = module.uri.split('/').slice(0, -1).join('/');
     const DEPENDENCIES_TO_LOAD = {
       React: `${ROOT_URI}/vendors/react.min`,
+      _: `${ROOT_URI}/vendors/underscore-min`,
       Qlik: 'js/qlik'
     };
+
+    loadCSS(`${ROOT_URI}/styles.css`);
 
     let initialProperties = require('./initialProperties');
     let definition = require('./definition');
