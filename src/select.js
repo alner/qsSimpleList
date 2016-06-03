@@ -6,7 +6,6 @@ export default class SelectComponent extends React.Component {
       var style = {
         width: "100%"
       };
-      //console.log(this.props.selectedValues);
       let selectedValue = "";
       if(this.props.selectedValues.length > 0)
         selectedValue = this.props.selectedValues[0];

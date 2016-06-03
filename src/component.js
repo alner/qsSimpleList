@@ -42,7 +42,7 @@ define(dependencies,
       definition,
       paint,
       snapshot: {
-        canTakeSnapshot : true
+        canTakeSnapshot : false
       }
     }
   }

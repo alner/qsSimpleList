@@ -1,6 +1,6 @@
 {
   "name": "NewQlikSenseExtension",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "QlikView Extension template (ES2015 + WebPack + Babel + GulpJS)",
   "keywords": "qliksense extension",
   "main": "VisualizationTemplate.js",
