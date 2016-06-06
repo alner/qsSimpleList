@@ -244,6 +244,7 @@ let settings = {
             value : "button",
             label : "Buttons"
           },
+          /*
           {
             value : "radiobutton",
             label : "Radio buttons"
@@ -252,13 +253,14 @@ let settings = {
             value : "checkbox",
             label : "Checkboxes"
           },
+          */
           {
             value : "sensecheckbox",
-            label : "Sense check boxes"
+            label : "Check boxes"
           },
           {
             value : "senseswitch",
-            label : "Sense switch"
+            label : "Switch"
           },
           // {
           //   value : "senseradiobutton",
