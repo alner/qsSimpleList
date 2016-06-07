@@ -12,6 +12,7 @@ export default function paint($element, layout) {
     let itemsLayout = layout.itemsLayout;
     let lockSelection = layout.lockSelection;
     let hideLabel = layout.hideLabel;
+    let hideExcluded = layout.hideExcluded;
     // if(Theme)
     // selectionColor = layout.selectionColor < Theme.palette.length ? Theme.palette[layout.selectionColor] : 'rgb(70, 198, 70)';
     let options = {
@@ -24,7 +25,8 @@ export default function paint($element, layout) {
       selectionColor,
       itemsLayout,
       lockSelection,
-      alwaysOneSelected
+      alwaysOneSelected,
+      hideExcluded
     };
 
     React.render(<ListComponent options={options}/>, element);

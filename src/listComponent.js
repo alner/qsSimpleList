@@ -12,6 +12,13 @@ import SenseCheckBoxComponent from './senseCheckbox';
 // Register default renderer
 // Renderers.items.registerDefault(<div />);
 
+function filterExcluded(hideExcluded, row) {
+  const field = row[0];
+  return (!hideExcluded ||
+    (field.qState != 'X' && field.qState != 'XS' && field.qState != 'XL')
+  );
+}
+
 class ListComponent extends React.Component {
     constructor(props) {
       super(props);
@@ -38,10 +45,18 @@ class ListComponent extends React.Component {
         let selectedCount = 0;
         let Renderer = Renderers.items.get(self.props.options.renderAs);
         let Container = Renderers.containers.get(self.props.options.renderAs);
+        const hideExcluded = self.props.options.hideExcluded;
 
         let selection = {};
-        let itemWidth = self.state.containerWidth || (self.props.options.itemsLayout === 'h' ? (100 / (this.props.options.data.length)) + '%' : '100%');
-        let items = this.props.options.data && this.props.options.data.map(function (row) {
+        //let itemWidth = self.state.containerWidth
+        //  || (self.props.options.itemsLayout === 'h' ? (100 / (this.props.options.data.length)) + '%' : '100%');
+        let items = this.props.options.data && this.props.options.data
+        .filter(filterExcluded.bind(null, hideExcluded));
+
+        let itemWidth = self.state.containerWidth
+          || (self.props.options.itemsLayout === 'h' ? (100 / (items.length)) + '%' : '100%');
+
+        items = items.map(function (row) {
           let field = row[0];
           let isSelected =
           field.qState === 'S'
@@ -143,7 +158,10 @@ class ListComponent extends React.Component {
       if(this.props.options.itemsLayout === 'h') {
         let main = React.findDOMNode(this.refs.main);
         let mainWidth = $(main).innerWidth();
-        let itemCount = this.props.options.data.length;
+        let itemCount = this.props.options.data
+        .filter(filterExcluded.bind(null, this.props.options.hideExcluded))
+        .length;
+        // this.props.options.data.length;
 
         if(this.props.options.hideLabel) {
           let itemWidth = `${Math.floor(100 / itemCount)}%`;

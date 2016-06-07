@@ -321,6 +321,12 @@ let settings = {
           ref: "hideLabel",
           defaultValue: false,
         },
+        hideExcluded:{
+          type: "boolean",
+          label: "Hide excluded",
+          ref: "hideExcluded",
+          defaultValue: false,
+        },
         /*
         itemsLayout: {
           type: "string",
