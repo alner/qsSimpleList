@@ -78,6 +78,7 @@ class ListComponent extends React.Component {
             isSelected={isSelected}
             renderAs={self.props.options.renderAs}
             selectionColor={self.props.options.selectionColor}
+            transparentStyle={self.props.options.transparentStyle}
             itemsLayout={self.props.options.itemsLayout}/>);
         });
 
@@ -103,7 +104,8 @@ class ListComponent extends React.Component {
             <Container ref="container" changeHandler={this.clickHandler.bind(this)}
               selectedValues={this.getSelectedValues()}
               itemWidth={itemWidth}
-              selectionColor={self.props.options.selectionColor}>
+              selectionColor={self.props.options.selectionColor}
+              transparentStyle={self.props.options.transparentStyle}>
             {items}
             </Container>
           );

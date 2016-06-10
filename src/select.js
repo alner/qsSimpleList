@@ -6,12 +6,20 @@ export default class SelectComponent extends React.Component {
       var style = {
         width: "100%"
       };
+
+      let className;
+      if(this.props.transparentStyle) {
+        className = 'qui-select transparent-select'; // qirby-select
+      } else {
+        className = 'qui-select'; // qirby-select
+      }
+
       let selectedValue = "";
       if(this.props.selectedValues.length > 0)
         selectedValue = this.props.selectedValues[0];
 
       if(width) style.width = width;
-      return (<select onChange={this.props.changeHandler} value={selectedValue} className={'qui-select qirby-select'} style={style}>{this.props.children}</select>);
+      return (<select onChange={this.props.changeHandler} value={selectedValue} className={className} style={style}>{this.props.children}</select>);
     }
 };
 

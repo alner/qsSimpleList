@@ -7,7 +7,11 @@ export default class ButtonComponent extends React.Component {
       var width = this.props.width;
       var renderAs = this.props.renderAs;
       var itemsLayout = this.props.itemsLayout;
-      var className = (this.props.isSelected ? "qui-button-selected"  : "qui-button");
+      var className;
+      if(this.props.transparentStyle)
+        className = (this.props.isSelected ? "qui-button-selected"  : "qui-button transarent-button");
+      else
+        className = (this.props.isSelected ? "qui-button-selected"  : "qui-button");
 
       var cStyle = {};
       var itemStyle;

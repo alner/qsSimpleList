@@ -327,6 +327,12 @@ let settings = {
           ref: "hideExcluded",
           defaultValue: false,
         },
+        transparent: {
+          type: "boolean",
+          label: "Transparent style",
+          ref: "transparentStyle",
+          defaultValue: false,
+        }
         /*
         itemsLayout: {
           type: "string",

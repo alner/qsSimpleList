@@ -8,11 +8,12 @@ export default function paint($element, layout) {
     let field = layout.qListObject.qDimensionInfo.qGroupFieldDefs[layout.qListObject.qDimensionInfo.qGroupPos].replace(/^=/, '');
     let alwaysOneSelected = layout.alwaysOneSelected || (layout.renderAs === 'select');
     let selectionColor = 'rgb(70, 198, 70)';
-    let renderAs = layout.renderAs;
-    let itemsLayout = layout.itemsLayout;
-    let lockSelection = layout.lockSelection;
-    let hideLabel = layout.hideLabel;
-    let hideExcluded = layout.hideExcluded;
+    const renderAs = layout.renderAs;
+    const itemsLayout = layout.itemsLayout;
+    const lockSelection = layout.lockSelection;
+    const hideLabel = layout.hideLabel;
+    const hideExcluded = layout.hideExcluded;
+    const transparentStyle = layout.transparentStyle;
     // if(Theme)
     // selectionColor = layout.selectionColor < Theme.palette.length ? Theme.palette[layout.selectionColor] : 'rgb(70, 198, 70)';
     let options = {
@@ -26,7 +27,8 @@ export default function paint($element, layout) {
       itemsLayout,
       lockSelection,
       alwaysOneSelected,
-      hideExcluded
+      hideExcluded,
+      transparentStyle
     };
 
     React.render(<ListComponent options={options}/>, element);
