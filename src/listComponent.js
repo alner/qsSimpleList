@@ -1,4 +1,4 @@
-import React from 'react';
+//import React from 'react';
 import Qlik from 'js/qlik';
 import Renderers from './renderers';
 import ButtonComponent from './button';
@@ -25,14 +25,18 @@ class ListComponent extends React.Component {
       this.state = {
         qSelected: {},
         qLastSelected: -1,
-        qLastField: '',
+        //qLastField: '',
         containerWidth: ''
       };
     }
 
     componentDidMount() {
-      let container = React.findDOMNode(this.refs.container);
-      if(container) $(container).on('tap', this.clickHandler.bind(this));
+      //let container = React.findDOMNode(this.refs.container);
+      //if(container) {
+        //$(container).on('tap', this.clickHandler.bind(this));
+        //$(container).on('click', this.clickHandler.bind(this));
+        //$(container).on('touchstart', this.clickHandler.bind(this));
+      //}
       this.recalcSize();
     }
 
@@ -40,60 +44,107 @@ class ListComponent extends React.Component {
       this.recalcSize();
     }
 
+    itemsToDraw(items, onItemSelectedCallback) {
+      const {
+        renderAs,
+        selectionColor,
+        transparentStyle,
+        itemsLayout
+      } = this.props.options;
+
+      const itemWidth = this.getItemWidth(items.length, itemsLayout);
+      const Renderer = Renderers.items.get(renderAs);
+
+      return items.map(function (row) {
+        let field = row[0];
+        let isSelected = field.qState === 'S' || field.qState === 'L';
+
+        if(isSelected && onItemSelectedCallback)
+          onItemSelectedCallback(field);
+
+        return (
+        <Renderer
+          key={field.qElemNumber}
+          data={field.qElemNumber}
+          width={itemWidth}
+          text={field.qText}
+          isSelected={isSelected}
+          renderAs={renderAs}
+          selectionColor={selectionColor}
+          transparentStyle={transparentStyle}
+          itemsLayout={itemsLayout}
+          />);
+      });
+    }
+
     render() {
-        let self = this;
+        const {
+          renderAs,
+          itemsLayout,
+        } = this.props.options;
+
+        const Container = Renderers.containers.get(renderAs);
+        const items = this.getItems();
+        const itemWidth = this.getItemWidth(items.length, itemsLayout);
+
         let selectedCount = 0;
-        let Renderer = Renderers.items.get(self.props.options.renderAs);
-        let Container = Renderers.containers.get(self.props.options.renderAs);
-        const hideExcluded = self.props.options.hideExcluded;
-
         let selection = {};
-        //let itemWidth = self.state.containerWidth
-        //  || (self.props.options.itemsLayout === 'h' ? (100 / (this.props.options.data.length)) + '%' : '100%');
-        let items = this.props.options.data && this.props.options.data
-        .filter(filterExcluded.bind(null, hideExcluded));
+        let components = this.itemsToDraw(items, (field) => {
+          ++selectedCount;
+          selection[field.qElemNumber] = field.qElemNumber;
 
-        let itemWidth = self.state.containerWidth
-          || (self.props.options.itemsLayout === 'h' ? (100 / (items.length)) + '%' : '100%');
-
-        items = items.map(function (row) {
-          let field = row[0];
-          let isSelected =
-          field.qState === 'S'
-          || field.qState === 'L';
-          //|| field.qState === 'O';
-
-          if(isSelected) {
-            ++selectedCount;
-            selection[field.qElemNumber] = field.qElemNumber;
-
-            if(self.state.qLastSelected !== field.qElemNumber)
-              self.state.qLastSelected = field.qElemNumber;
-          }
-
-          return (<Renderer key={field.qElemNumber}
-            data={field.qElemNumber}
-            width={itemWidth}
-            text={field.qText}
-            isSelected={isSelected}
-            renderAs={self.props.options.renderAs}
-            selectionColor={self.props.options.selectionColor}
-            transparentStyle={self.props.options.transparentStyle}
-            itemsLayout={self.props.options.itemsLayout}/>);
+          if(this.state.qLastSelected !== field.qElemNumber)
+            this.state.qLastSelected = field.qElemNumber;
         });
 
-        if(!_.isEqual(self.state.qSelected, selection))
-          self.state.qSelected = selection;
+        // let items = this.getItems();
+        // let itemWidth = self.state.containerWidth
+        //   || (itemsLayout === 'h' ? (100 / (items.length)) + '%' : '100%');
 
-        if(this.props.options.alwaysOneSelected && selectedCount > 1) {
-          this.selectValues(this.selectedValuesCount() > 1); // select first if more then one selection
+        // items = items.map(function (row) {
+        //   let field = row[0];
+        //   let isSelected =
+        //   field.qState === 'S'
+        //   || field.qState === 'L';
+        //   //|| field.qState === 'O';
+        //
+        //   if(isSelected) {
+        //     ++selectedCount;
+        //     selection[field.qElemNumber] = field.qElemNumber;
+        //
+        //     if(self.state.qLastSelected !== field.qElemNumber)
+        //       self.state.qLastSelected = field.qElemNumber;
+        //   }
+        //
+        //   return (
+        //   <Renderer key={field.qElemNumber}
+        //     data={field.qElemNumber}
+        //     width={itemWidth}
+        //     text={field.qText}
+        //     isSelected={isSelected}
+        //     //{...self.props.options}
+        //     renderAs={self.props.options.renderAs}
+        //     selectionColor={self.props.options.selectionColor}
+        //     transparentStyle={self.props.options.transparentStyle}
+        //     itemsLayout={self.props.options.itemsLayout}
+        //     />);
+        // });
+
+        if(!_.isEqual(this.state.qSelected, selection))
+          this.state.qSelected = selection;
+
+        if(this.props.options.alwaysOneSelected
+        && items.length > 0
+        && (selectedCount > 1 || selectedCount == 0)) {
+          // select first if more then one selection
+          this.selectValues(selectedCount == 0 || this.selectedValuesCount() > 1);
         }
 
         let titleComponent;
         if(!this.props.options.hideLabel) {
           titleComponent = (
             <div ref="title" className="title qvt-visualization-title">
-            {self.props.options.label}
+            {this.props.options.label}
             </div>
           );
         }
@@ -101,19 +152,22 @@ class ListComponent extends React.Component {
         let containerComponent;
         if(Container)
           containerComponent = (
-            <Container ref="container" changeHandler={this.clickHandler.bind(this)}
+            <Container ref="container"
+              //{...self.props.options}
+              changeHandler={this.clickHandler.bind(this)}
               selectedValues={this.getSelectedValues()}
               itemWidth={itemWidth}
-              selectionColor={self.props.options.selectionColor}
-              transparentStyle={self.props.options.transparentStyle}>
-            {items}
+              selectionColor={this.props.options.selectionColor}
+              transparentStyle={this.props.options.transparentStyle}>
+            {components}
             </Container>
           );
         else
           containerComponent = (
             <form ref="container"
-              onClick={this.clickHandler.bind(this)}>
-            {items}
+              onClick={this.clickHandler.bind(this)}
+              onTouchEnd={this.clickHandler.bind(this)}>
+            {components}
             </form>
           );
 
@@ -123,6 +177,29 @@ class ListComponent extends React.Component {
             {containerComponent}
           </div>
         );
+    }
+
+    getItems(){
+      const {
+        data,
+        hideExcluded,
+        showFirstN,
+        firstN
+      } = this.props.options;
+
+      let items = data.filter(filterExcluded.bind(null, hideExcluded));
+
+      if(showFirstN)
+        items = items.filter((value, index) => {
+          return index < firstN;
+        });
+
+      return items;
+    }
+
+    getItemWidth(itemsCount, itemsLayout) {
+      return this.state.containerWidth
+        || (itemsLayout === 'h' ? (100 / itemsCount) + '%' : '100%');
     }
 
     recalcSize(){
@@ -160,9 +237,10 @@ class ListComponent extends React.Component {
       if(this.props.options.itemsLayout === 'h') {
         let main = React.findDOMNode(this.refs.main);
         let mainWidth = $(main).innerWidth();
-        let itemCount = this.props.options.data
-        .filter(filterExcluded.bind(null, this.props.options.hideExcluded))
-        .length;
+        let itemCount = this.getItems().length;
+        // let itemCount = this.props.options.data
+        // .filter(filterExcluded.bind(null, this.props.options.hideExcluded))
+        // .length;
         // this.props.options.data.length;
 
         if(this.props.options.hideLabel) {
@@ -198,6 +276,7 @@ class ListComponent extends React.Component {
       }
       else
       if(e) {
+        e.stopPropagation();
         e.preventDefault();
         value = parseInt(e.target.getAttribute("data-value") || e.target.value);
       }
@@ -207,24 +286,25 @@ class ListComponent extends React.Component {
     }
 
     selectValues(selectFirst){
-      var qSelf = this.props.options.self;
-      var isLockSelection = this.props.options.lockSelection;
-      var fieldName = this.props.options.field;
-      var app = Qlik.currApp();
-      var field = app.field(fieldName);
+      //const qSelf = this.props.options.self;
+      const isLockSelection = this.props.options.lockSelection;
+      const fieldName = this.props.options.field;
+      const app = Qlik.currApp();
+      const field = app.field(fieldName);
+      if(field) {
+        let toSelect = selectFirst ? [0] : _.values(this.state.qSelected);
+        if(selectFirst)
+          this.state.qLastSelected = 0;
 
-      var toSelect = selectFirst ? [0] : _.values(this.state.qSelected);
-      if(selectFirst)
-        this.state.qLastSelected = 0;
+        if(isLockSelection)
+            field.unlock();
 
-      if(isLockSelection && field)
-          field.unlock();
+        //qSelf.backendApi.selectValues(0, toSelect, false);
+        field.select(toSelect, false, false);
 
-      //qSelf.backendApi.selectValues(0, toSelect, false);
-      field.select(toSelect, false, false);
-
-      if(isLockSelection && field)
-        field.lock();
+        if(isLockSelection)
+          field.lock();
+      }
     }
 
     selectedValuesCount(){

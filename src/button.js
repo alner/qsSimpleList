@@ -5,7 +5,7 @@ export default class ButtonComponent extends React.Component {
       var data = this.props.data;
       var text = this.props.text;
       var width = this.props.width;
-      var renderAs = this.props.renderAs;
+      //var renderAs = this.props.renderAs;
       var itemsLayout = this.props.itemsLayout;
       var className;
       if(this.props.transparentStyle)

@@ -21,6 +21,7 @@ var config = {
   },
   externals: {
 		"react": "React",
+    "react-dom": "ReactDOM",
     "js/qlik": "Qlik"
 	},
   plugins: [
@@ -30,7 +31,7 @@ var config = {
     modulesDirectories: ['node_modules']
   },
   module: {
-    noParse: ["react", "js/qlik"],
+    noParse: ["react", "react.min", "react-dom", "react-dom.min", "js/qlik"],
     loaders: [
       {
         test: /\.jsx?$/,

@@ -5,6 +5,8 @@ var less = require('gulp-less');
 var del = require('del');
 var zip = require('gulp-zip');
 var minifyCSS = require('gulp-minify-css');
+var LessPluginAutoPrefix = require('less-plugin-autoprefix');
+var autoprefix= new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
 var runSequence = require('run-sequence');
 var rename = require('gulp-rename');
 var watch = require('gulp-watch');
@@ -44,7 +46,9 @@ gulp.task('qext', function () {
 
 gulp.task('less2css', function(){
   return gulp.src(lessFiles)
-  .pipe(less())
+  .pipe(less({
+    plugins: [autoprefix]
+   }))
   .pipe(minifyCSS({keepSpecialComments : 0}))
   .pipe(gulp.dest(buildDest));
 });

@@ -49,28 +49,6 @@ let dimensions = {
         b.qFieldLabels[0] = b.qFieldDefs[0]
       }
     },
-    /*
-    frequency: {
-      type: "string",
-      component: "dropdown",
-      label: "Frequency mode",
-      ref: "qListObjectDef.qFrequencyMode",
-      options: [{
-        value: "N",
-        label: "No frequency"
-      }, {
-        value: "V",
-        label: "Absolute value"
-      }, {
-        value: "P",
-        label: "Percent"
-      }, {
-        value: "R",
-        label: "Relative"
-      }],
-      defaultValue: "V"
-    },
-    */
     clearDimension : {
       type : "boolean",
       component : RemoveButtonComponent,
@@ -88,6 +66,21 @@ let dimensions = {
         a.qListObjectDef.qDef.qFieldDefs[0] = "";
         a.qListObjectDef.qDef.qFieldLabels[0] = "";
         a.clearDimension = false;
+      }
+    },
+    showFirstN: {
+      type: "boolean",
+      translation : "properties.dimensionLimits.limitation",
+      ref: "showFirstN",
+      defaultValue: false,
+    },
+    firstN: {
+      type: "number",
+      translation : "properties.dimensionLimits.fixedNumber",
+      ref: "firstN",
+      defaultValue: 0,
+      show: function(data) {
+        return data.showFirstN;
       }
     }
   }
@@ -332,7 +325,7 @@ let settings = {
           label: "Transparent style",
           ref: "transparentStyle",
           defaultValue: false,
-        }
+        },
         /*
         itemsLayout: {
           type: "string",
