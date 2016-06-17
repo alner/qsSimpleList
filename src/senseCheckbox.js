@@ -48,30 +48,56 @@ export default class SenseCheckBoxComponent extends React.Component {
 
       if(renderAs === "senseswitch") {
         // Switch
-        return (<div style={itemStyle}>
-              <div className={"qui-onoffswitch"} style={floatLeftStyle}>
-              <label className="onoffswitch-label">
-                <input type="checkbox" checked={isSelected} className="onoffswitch-checkbox" />
-                <span className="onoffswitch-span">
-                  <div id={SenseCheckBoxComponent.getScopeId()}>
-                    {inlineStyle}
-                    <div className="onoffswitch-inner" data-value={data}></div>
-                    <div className="onoffswitch-switch" data-value={data}></div>
-                  </div>
+        /*
+        <div style={itemStyle}>
+          <div className={"qui-onoffswitch"} style={floatLeftStyle}>
+          <label className="onoffswitch-label">
+            <input type="checkbox" checked={isSelected} className="onoffswitch-checkbox" />
+            <span className="onoffswitch-span">
+              <div id={SenseCheckBoxComponent.getScopeId()}>
+                {inlineStyle}
+                <div className="onoffswitch-inner" data-value={data}></div>
+                <div className="onoffswitch-switch" data-value={data}></div>
+              </div>
+            </span>
+          </label>
+          </div>
+          <div className="title" style={labelStyle}>{text}</div>
+        </div>
+        */
+        return (
+          <div style={itemStyle}>
+            <div className="lui-switch qui-onoffswitch" style={floatLeftStyle}>
+              <label className="lui-switch__label onoffswitch-label">
+                <input type="checkbox" className="lui-switch__checkbox onoffswitch-checkbox" checked={isSelected} />
+                <span className="lui-switch__span onoffswitch-span">
+                  <div className="lui-switch__inner onoffswitch-inner" data-value={data}></div>
+                  <div className="lui-switch__switch onoffswitch-switch" data-value={data}></div>
                 </span>
               </label>
-              </div>
-              <div className="title" style={labelStyle}>{text}</div>
-            </div>);
+            </div>
+            <div className="title" style={labelStyle}>{text}</div>
+          </div>
+          );
       } else { // sensecheckbox
         // Checkbox
-        return (<div className={"qui-checkboxicon"} style={itemStyle}>
+        /*
+        <div className={"qui-checkboxicon"} style={itemStyle}>
               <input type="checkbox" checked={isSelected} />
               <div className={"check-wrap"}>
                 <span data-value={data} className={"check"} style={checkStyle}/>
                 <span data-value={data} className={"check-text label"}>{text}</span>
               </div>
-            </div>);
+            </div>
+        */
+        return (
+          <label className="lui-checkbox qui-checkbox" style={itemStyle}>
+            <input className="lui-checkbox__input" type="checkbox" checked={isSelected} />
+            <div className="lui-checkbox__check-wrap check-wrap">
+              <span data-value={data} className="lui-checkbox__check check" style={checkStyle}></span>
+              <span data-value={data} className="lui-checkbox__check-text check-text">{text}</span>
+            </div>
+          </label>);
       }
     }
 };

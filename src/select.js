@@ -18,9 +18,9 @@ export default class SelectComponent extends React.Component {
 
       let className;
       if(this.props.transparentStyle) {
-        className = 'qui-select touch transparent-select'; // qirby-select
+        className = 'lui-select qui-select touch transparent-select'; // qirby-select
       } else {
-        className = 'qui-select touch'; // qirby-select
+        className = 'lui-select qui-select touch'; // qirby-select
       }
 
       let selectedValue = "";
