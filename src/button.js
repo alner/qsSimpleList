@@ -9,9 +9,10 @@ export default class ButtonComponent extends React.Component {
       var itemsLayout = this.props.itemsLayout;
       var className;
       if(this.props.transparentStyle)
-        className = (this.props.isSelected ? "lui-button-selected qui-button-selected"  : "lui-button qui-button transarent-button");
+        //className = (this.props.isSelected ? "lui-button--success qui-button-selected"  : "lui-button qui-button transarent-button");
+        className = "lui-button qui-button transarent-button";
       else
-        className = (this.props.isSelected ? "lui-button-selected qui-button-selected"  : "lui-button qui-button");
+        className = "lui-button lui-button--toolbar qui-button";
 
       var cStyle = {};
       var itemStyle;
@@ -34,10 +35,10 @@ export default class ButtonComponent extends React.Component {
       }
 
       if(this.props.isSelected) {
-        className = "lui-button qui-button"; // qirby-button
+        className = "lui-button lui-button--success qui-button"; // qirby-button
         itemStyle.backgroundImage = "none";
         itemStyle.backgroundColor = this.props.selectionColor;
-        itemStyle.borderColor = this.props.selectionColor;
+        //itemStyle.borderColor = this.props.selectionColor;
       }
 
       if(width) {
