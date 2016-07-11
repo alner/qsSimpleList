@@ -3,7 +3,7 @@
   "description" : "Simple List visualization",
   "icon" : "list",
   "type" : "visualization",
-  "version": "0.2",
+  "version": "1.0",
   "preview" : "listbox",
   "author": "Alexander Nerush"
 }

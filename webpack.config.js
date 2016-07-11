@@ -1,5 +1,6 @@
 var webpack = require('webpack');
 var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+//var CopyWebpackPlugin = require('copy-webpack-plugin');
 var proxy = require('http-proxy-middleware');
 var path = require('path');
 var serverConfig = require('./server.config.json');
@@ -103,6 +104,10 @@ if(process.env.NODE_ENV !== 'production') {
     },
   }));
   config.plugins.push(new webpack.optimize.OccurenceOrderPlugin());
+  // config.plugins.push(new CopyWebpackPlugin([{
+  //   from: 'build',
+  //   to: path.resolve(serverConfig.deployFolder)
+  // }]));
 }
 
 module.exports = config;

@@ -10,11 +10,13 @@ var autoprefix= new LessPluginAutoPrefix({ browsers: ["last 2 versions"] });
 var runSequence = require('run-sequence');
 var rename = require('gulp-rename');
 var watch = require('gulp-watch');
+//var copy = require('gulp-copy');
 var path = require('path');
 var startDevServer = require('./server').start;
 var build = require('./server').build;
 //var buildDest = require('./server.config.json').buildFolder;
 var buildDest = require('./server').buildPathDestination;
+var deployDest = require('./server').deployPathDestination;
 var name = path.basename(__dirname);
 var templateFile = './src/Template.qextmpl';
 var lessFiles = './src/**/*.less';
@@ -76,11 +78,16 @@ gulp.task('zip-build', function(){
     .pipe(gulp.dest('build'));
 });
 
+gulp.task('deploy', function(){
+  return gulp.src(buildDest + "/**/*").pipe(gulp.dest(deployDest));
+});
+
 gulp.task('development', ['qext', 'less2css', 'css', 'watch', 'devServer']);
 gulp.task('production', function(callback) {
   runSequence(['qext', 'less2css', 'css', 'remove-build-zip'],
     'build',
-    'zip-build'
+    'zip-build',
+    'deploy'
     );
 });
 

@@ -1,9 +1,0 @@
-{
-  "name" : "Simple List New",
-  "description" : "Simple List visualization",
-  "icon" : "list",
-  "type" : "visualization",
-  "version": "0.2",
-  "preview" : "listbox",
-  "author": "Alexander Nerush"
-}

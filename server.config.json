@@ -2,6 +2,6 @@
   "devServerHost": "http://172.17.2.15",
 	"devServerPort": "8080",
 	"buildFolder": "build",
-  "deployFolder": "C:/Users/nerush/Documents/Qlik/Sense/Extensions/qsSimpleListNew",
+  "deployFolder": "C:/Users/nerush/Documents/Qlik/Sense/Extensions/qsSimpleList",
 	"url": "http://172.17.2.15:4848/sense/app/C%3A%5CUsers%5Cnerush%5CDocuments%5CQlik%5CSense%5CApps%5CAdventureWorks.qvf/sheet/AcaLYa/state/analysis"
 }
