@@ -9,6 +9,10 @@ var contentUrl = serverConfig.url;
 var compiler = webpack(config);
 var originalOutputFileSystem = compiler.outputFileSystem;
 
+module.exports.buildPathDestination =
+  process.env.npm_lifecycle_event === 'build' ?
+  serverConfig.buildFolder : serverConfig.deployFolder;
+console.log(module.exports.buildPathDestination);
 
 module.exports.start = function start(callback) {
 	var devServer = new WebpackDevServer(compiler, {
@@ -38,7 +42,7 @@ module.exports.start = function start(callback) {
 
 module.exports.build = function build(callback){
 	compiler.run(function(err, stats) {
-		if(err) 
+		if(err)
 			console.error(stats);
 
 		if(stats) console.info(stats.toString());

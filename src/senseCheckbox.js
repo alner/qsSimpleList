@@ -1,8 +1,9 @@
+import {h, Component} from 'preact';
 import Renderers from './renderers';
 
 var refCounter = 0;
 
-export default class SenseCheckBoxComponent extends React.Component {
+export default class SenseCheckBoxComponent extends Component {
     static getScopeId() {
         return 'sc' + refCounter;
       }

@@ -1,15 +1,7 @@
+import {h, Component} from 'preact';
 import Renderers from './renderers';
 
-export default class SelectComponent extends React.Component {
-    // componentDidMount() {
-    //   let element = React.findDOMNode(this.refs.select);
-    //   if(element) {
-    //     $(element).on('touchstart', () => {
-    //       $(element).focus();
-    //     });
-    //   }
-    // }
-
+export default class SelectComponent extends Component {
     render() {
       var width = this.props.itemWidth;
       var style = {
@@ -29,12 +21,13 @@ export default class SelectComponent extends React.Component {
 
       if(width) style.width = width;
 
-      return (<select ref="select"
+      return (
+        <select ref={(c) => this._select = c}
         onChange={this.props.changeHandler}
         onTouchStart={() => {
           // prevent strange behavior on iOS
           // (without it needs two taps, first tap - focus, second - open select)
-          const element = React.findDOMNode(this.refs.select);
+          const element = this._select;
           if(element) element.focus();
         }}
         value={selectedValue}
@@ -42,7 +35,7 @@ export default class SelectComponent extends React.Component {
     }
 };
 
-class OptionComponent extends React.Component {
+class OptionComponent extends Component {
     render() {
       var data = this.props.data;
       var text = this.props.text;

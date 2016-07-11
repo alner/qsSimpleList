@@ -1,6 +1,7 @@
+import {h, Component} from 'preact';
 import Renderers from './renderers';
 
-export default class CheckBoxComponent extends React.Component {
+export default class CheckBoxComponent extends Component {
     render() {
       var data = this.props.data;
       var text = this.props.text;
@@ -15,7 +16,11 @@ export default class CheckBoxComponent extends React.Component {
         itemStyle.float = "left";
       }
 
-      return (<div style={itemStyle}><input type="checkbox" data-value={data} className={className} checked={isSelected}></input>{text}</div>);
+      return (
+        <div style={itemStyle}>
+          <input type="checkbox" data-value={data} className={className} checked={isSelected}></input>
+          {text}
+        </div>);
     }
 };
 

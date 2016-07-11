@@ -13,8 +13,8 @@ var watch = require('gulp-watch');
 var path = require('path');
 var startDevServer = require('./server').start;
 var build = require('./server').build;
-var buildDest = require('./server.config.json').buildFolder;
-
+//var buildDest = require('./server.config.json').buildFolder;
+var buildDest = require('./server').buildPathDestination;
 var name = path.basename(__dirname);
 var templateFile = './src/Template.qextmpl';
 var lessFiles = './src/**/*.less';

@@ -18,7 +18,10 @@
   }
 
   .touch {
-    touch-action: manipulation;
+    //touch-action: auto;
+    -ms-touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
   }
 
   .transparent-select {
@@ -31,5 +34,26 @@
     background-color: transparent;
     background-image: none;
     border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .excluded {
+    background-color: #A9A9A9
+  }
+
+  .alternative {
+    background-color: #ddd;
+  }
+
+  .btns--vertical {
+    clear: both;
+    border-radius: 0px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .btns--horizontal {
+    float: left;
+    border-radius: 0px;
+    overflow: hidden;
   }
 }

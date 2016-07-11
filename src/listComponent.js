@@ -1,5 +1,9 @@
 //import React from 'react';
-import Qlik from 'js/qlik';
+import {h, Component} from 'preact';
+//import Qlik from 'js/qlik';
+//import _ from 'underscore';
+import isEqual from 'lodash.isEqual';
+import values from 'lodash.values';
 import Renderers from './renderers';
 import ButtonComponent from './button';
 //import CheckBoxComponent from './checkbox';
@@ -19,7 +23,7 @@ function filterExcluded(hideExcluded, row) {
   );
 }
 
-class ListComponent extends React.Component {
+class ListComponent extends Component {
     constructor(props) {
       super(props);
       this.state = {
@@ -68,6 +72,7 @@ class ListComponent extends React.Component {
           data={field.qElemNumber}
           width={itemWidth}
           text={field.qText}
+          state={field.qState}
           isSelected={isSelected}
           renderAs={renderAs}
           selectionColor={selectionColor}
@@ -97,40 +102,8 @@ class ListComponent extends React.Component {
             this.state.qLastSelected = field.qElemNumber;
         });
 
-        // let items = this.getItems();
-        // let itemWidth = self.state.containerWidth
-        //   || (itemsLayout === 'h' ? (100 / (items.length)) + '%' : '100%');
 
-        // items = items.map(function (row) {
-        //   let field = row[0];
-        //   let isSelected =
-        //   field.qState === 'S'
-        //   || field.qState === 'L';
-        //   //|| field.qState === 'O';
-        //
-        //   if(isSelected) {
-        //     ++selectedCount;
-        //     selection[field.qElemNumber] = field.qElemNumber;
-        //
-        //     if(self.state.qLastSelected !== field.qElemNumber)
-        //       self.state.qLastSelected = field.qElemNumber;
-        //   }
-        //
-        //   return (
-        //   <Renderer key={field.qElemNumber}
-        //     data={field.qElemNumber}
-        //     width={itemWidth}
-        //     text={field.qText}
-        //     isSelected={isSelected}
-        //     //{...self.props.options}
-        //     renderAs={self.props.options.renderAs}
-        //     selectionColor={self.props.options.selectionColor}
-        //     transparentStyle={self.props.options.transparentStyle}
-        //     itemsLayout={self.props.options.itemsLayout}
-        //     />);
-        // });
-
-        if(!_.isEqual(this.state.qSelected, selection))
+        if(!isEqual(this.state.qSelected, selection))
           this.state.qSelected = selection;
 
         if(this.props.options.alwaysOneSelected
@@ -143,8 +116,9 @@ class ListComponent extends React.Component {
         let titleComponent;
         if(!this.props.options.hideLabel) {
           titleComponent = (
-            <div ref="title" className="title qvt-visualization-title">
-            {this.props.options.label}
+            <div ref={(c) => this._title = c}
+              className="title qvt-visualization-title">
+              {this.props.options.label}
             </div>
           );
         }
@@ -152,7 +126,7 @@ class ListComponent extends React.Component {
         let containerComponent;
         if(Container)
           containerComponent = (
-            <Container ref="container"
+            <Container ref={(c) => this._container = c }
               //{...self.props.options}
               changeHandler={this.clickHandler.bind(this)}
               selectedValues={this.getSelectedValues()}
@@ -164,15 +138,16 @@ class ListComponent extends React.Component {
           );
         else
           containerComponent = (
-            <form ref="container"
+            <form ref={(c) => this._container = c }
               onClick={this.clickHandler.bind(this)}
-              onTouchEnd={this.clickHandler.bind(this)}>
+              onTouchStart={this.clickHandler.bind(this)}
+              >
             {components}
             </form>
           );
 
         return (
-          <div ref="main" className="qv-object-simple-list main">
+          <div ref={(c) => this._main = c} className="qv-object-simple-list main">
             {titleComponent}
             {containerComponent}
           </div>
@@ -199,7 +174,7 @@ class ListComponent extends React.Component {
 
     getItemWidth(itemsCount, itemsLayout) {
       return this.state.containerWidth
-        || (itemsLayout === 'h' ? (100 / itemsCount) + '%' : '100%');
+        || (itemsLayout === 'h' ? 100.0 / itemsCount + '%' : '100%');
     }
 
     recalcSize(){
@@ -211,13 +186,13 @@ class ListComponent extends React.Component {
               containerWidth: '100%'
             });
         } else {
-          let main = React.findDOMNode(this.refs.main);
+          let main = this._main;
           let main$ = $(main);
           let mainWidth = main$.innerWidth();
-          let container = React.findDOMNode(this.refs.container);
+          let container = this._container;
           let container$ = $(container);
           let containerPos = container$.offset();
-          let title = React.findDOMNode(this.refs.title);
+          let title = this._title;
           let title$ = $(title);
           let titleWidth = title$.width();
           let titleHeight = title$.height();
@@ -235,7 +210,7 @@ class ListComponent extends React.Component {
       }
       else
       if(this.props.options.itemsLayout === 'h') {
-        let main = React.findDOMNode(this.refs.main);
+        let main = this._main;
         let mainWidth = $(main).innerWidth();
         let itemCount = this.getItems().length;
         // let itemCount = this.props.options.data
@@ -244,13 +219,13 @@ class ListComponent extends React.Component {
         // this.props.options.data.length;
 
         if(this.props.options.hideLabel) {
-          let itemWidth = `${Math.floor(100 / itemCount)}%`;
+          let itemWidth = `${(100.0 / itemCount)}%`; // Math.floor
           if(this.state.containerWidth !== itemWidth)
             this.setState({
               containerWidth: itemWidth
             });
         } else {
-            let title = React.findDOMNode(this.refs.title);
+            let title = this._title;
             let titleWidth = $(title).width();
             if(itemCount > 0) {
               let itemWidth = `${Math.floor((mainWidth - titleWidth) / itemCount - 2)}px`;
@@ -276,23 +251,25 @@ class ListComponent extends React.Component {
       }
       else
       if(e) {
-        e.stopPropagation();
         e.preventDefault();
+        e.stopPropagation();
         value = parseInt(e.target.getAttribute("data-value") || e.target.value);
       }
 
       if(typeof value === "number" && !isNaN(value))
         this.makeSelection(value);
+
+      return true;
     }
 
     selectValues(selectFirst){
       //const qSelf = this.props.options.self;
       const isLockSelection = this.props.options.lockSelection;
-      const fieldName = this.props.options.field;
-      const app = Qlik.currApp();
-      const field = app.field(fieldName);
+      const field = this.props.options.field;
+      // const app = Qlik.currApp();
+      // const field = app.field(fieldName);
       if(field) {
-        let toSelect = selectFirst ? [0] : _.values(this.state.qSelected);
+        let toSelect = selectFirst ? [0] : values(this.state.qSelected);
         if(selectFirst)
           this.state.qLastSelected = 0;
 
@@ -308,11 +285,11 @@ class ListComponent extends React.Component {
     }
 
     selectedValuesCount(){
-      return _.values(this.state.qSelected).length;
+      return values(this.state.qSelected).length;
     }
 
     getSelectedValues(){
-      return _.values(this.state.qSelected);
+      return values(this.state.qSelected);
     }
 
     makeSelection(value){

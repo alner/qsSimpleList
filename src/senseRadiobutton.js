@@ -1,6 +1,7 @@
+import {h, Component} from 'preact';
 import Renderers from './renderers';
 
-export default class SenseRadioButtonComponent extends React.Component {
+export default class SenseRadioButtonComponent extends Component {
     render() {
       var data = this.props.data;
       var text = this.props.text;
