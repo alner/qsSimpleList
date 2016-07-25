@@ -11,7 +11,7 @@ let dimensions = {
   items: {
     cId : {
       ref : "qListObjectDef.qDef.cId",
-      type : "string",
+      type : "dimension",
       show : false
     },
     libraryId : {
@@ -269,6 +269,15 @@ let settings = {
           // }
           ],
           defaultValue : "button"
+        },
+        showState: {
+          type: "boolean",
+          label: "Show state",
+          ref: "showState",
+          show: function(data){
+            return (data.renderAs === 'button');
+          },
+          defaultValue: false
         },
         alwaysOneSelectedValue:{
           type: "boolean",

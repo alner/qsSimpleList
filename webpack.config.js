@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 //var CopyWebpackPlugin = require('copy-webpack-plugin');
-var proxy = require('http-proxy-middleware');
+//var proxy = require('http-proxy-middleware');
 var path = require('path');
 var serverConfig = require('./server.config.json');
 
@@ -71,10 +71,10 @@ if(process.env.NODE_ENV !== 'production') {
         // (which should be serving on http://localhost:3100/)
         // through BrowserSync
         proxy: {
-          middleware: [proxy({
-            target: serverConfig.url,
-            ws: true
-          })],
+          // middleware: [proxy({
+          //   target: serverConfig.url,
+          //   ws: true
+          // })],
           target: serverConfig.url,
           // //devServerHost + ':' + devServerPort,
           ws: true

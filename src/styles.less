@@ -46,14 +46,23 @@
 
   .btns--vertical {
     clear: both;
-    border-radius: 0px;
+    //border-radius: 0px;
+    padding: 0 !important;
     width: 100%;
     overflow: hidden;
   }
 
   .btns--horizontal {
     float: left;
-    border-radius: 0px;
+    //border-radius: 0px;
+    padding: 0 !important;
     overflow: hidden;
+  }
+
+  .lui-button--success:focus,
+  .lui-button--success.lui-focused {
+    //padding: 0 16px;
+    //border: 1px solid #52a2cc;
+    box-shadow: none !important;
   }
 }

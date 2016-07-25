@@ -1,7 +1,7 @@
 {
-  "name": "NewQlikSenseExtension",
-  "version": "0.0.3",
-  "description": "QlikView Extension template (ES2015 + WebPack + Babel + GulpJS)",
+  "name": "qsSimpleList",
+  "version": "1.0.0",
+  "description": "Simple List extension for Qlik Sense",
   "keywords": "qliksense extension",
   "main": "VisualizationTemplate.js",
   "private": true,

@@ -7,7 +7,8 @@ export default class ButtonComponent extends Component {
         data,
         text,
         state,
-        width } = this.props;
+        width,
+        showState } = this.props;
 
       //var renderAs = this.props.renderAs;
       let itemsLayout = this.props.itemsLayout;
@@ -43,6 +44,7 @@ export default class ButtonComponent extends Component {
         // };
       }
       //console.log(state);
+      if(showState)
       switch(state) {
         case 'X':
         case 'XS':
@@ -68,15 +70,44 @@ export default class ButtonComponent extends Component {
       }
 
       return (
-            <button
-              data-value={data}
-              className={classNames.join(' ')}
-              style={itemStyle}
-              title={text}>
-              {text}
-            </button>
+        <button
+          data-value={data}
+          className={classNames.join(' ')}
+          style={itemStyle}
+          title={text}>
+          {text}
+        </button>
       );
     }
   };
 
-Renderers.items.register("button", ButtonComponent);   // Vertical buttons
+export class ButtonGroupComponent extends Component {
+  render(props) {
+    // const width = this.props.containerWidth;
+    const titleWidth = this.props.titleWidth;
+    let style = {
+      width: '100%'
+    };
+
+    if(titleWidth)
+      style = {
+        width: `calc(100%-${titleWidth}px)`
+      };
+
+    // if(width) {
+    //   style.width = width;
+    // }
+
+    return (
+      <div class="lui-buttongroup qui-buttongroup" style={style}
+        onClick={props.changeHandler}
+        onTouchStart={props.changeHandler}>
+        {props.children}
+      </div>
+    );
+  }
+}
+
+
+Renderers.containers.register('button', ButtonGroupComponent);
+Renderers.items.register('button', ButtonComponent);

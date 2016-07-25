@@ -53,7 +53,8 @@ class ListComponent extends Component {
         renderAs,
         selectionColor,
         transparentStyle,
-        itemsLayout
+        itemsLayout,
+        showState
       } = this.props.options;
 
       const itemWidth = this.getItemWidth(items.length, itemsLayout);
@@ -78,6 +79,7 @@ class ListComponent extends Component {
           selectionColor={selectionColor}
           transparentStyle={transparentStyle}
           itemsLayout={itemsLayout}
+          showState={showState}
           />);
       });
     }
@@ -106,10 +108,10 @@ class ListComponent extends Component {
         if(!isEqual(this.state.qSelected, selection))
           this.state.qSelected = selection;
 
-        if(this.props.options.alwaysOneSelected
+        if((this.props.options.alwaysOneSelected || renderAs === 'select')
         && items.length > 0
         && (selectedCount > 1 || selectedCount == 0)) {
-          // select first if more then one selection
+          // select first one if more then one selection exists
           this.selectValues(selectedCount == 0 || this.selectedValuesCount() > 1);
         }
 
@@ -131,6 +133,8 @@ class ListComponent extends Component {
               changeHandler={this.clickHandler.bind(this)}
               selectedValues={this.getSelectedValues()}
               itemWidth={itemWidth}
+              containerWidth={this.state.containerWidth}
+              titleWidth={this.state.titleWidth}
               selectionColor={this.props.options.selectionColor}
               transparentStyle={this.props.options.transparentStyle}>
             {components}
@@ -198,13 +202,15 @@ class ListComponent extends Component {
           let titleHeight = title$.height();
           let titlePos = title$.offset();
           let itemWidth = `${mainWidth - titleWidth - 6}px`;
-          if(mainWidth - titleWidth <= 44
+          if(titlePos && containerPos
+          && mainWidth - titleWidth <= 44
           && titlePos.top + titleHeight < containerPos.top) {
             itemWidth = '100%';
           }
           if(this.state.containerWidth !== itemWidth)
             this.setState({
-              containerWidth: itemWidth
+              containerWidth: itemWidth,
+              titleWidth
             });
         }
       }
@@ -231,7 +237,8 @@ class ListComponent extends Component {
               let itemWidth = `${Math.floor((mainWidth - titleWidth) / itemCount - 2)}px`;
               if(this.state.containerWidth !== itemWidth)
                 this.setState({
-                  containerWidth: itemWidth
+                  containerWidth: itemWidth,
+                  titleWidth
                 });
             }
         }
@@ -244,7 +251,8 @@ class ListComponent extends Component {
       }
     }
 
-    clickHandler(e, dummy, data) {
+    // e, dummy, data
+    clickHandler(e, data) {
       var value;
       if(data) {
         value = parseInt(data);

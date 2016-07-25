@@ -37,11 +37,11 @@ export default class SelectComponent extends Component {
 
 class OptionComponent extends Component {
     render() {
-      var data = this.props.data;
-      var text = this.props.text;
-      //var isSelected = this.props.isSelected;
+      const data = this.props.data;
+      const text = this.props.text;
+      const isSelected = this.props.isSelected;
       // selected={isSelected} see SelectComponent (value property)
-      return (<option value={data} data-value={data}>{text}</option>);
+      return (<option value={data} data-value={data} selected={isSelected}>{text}</option>);
     }
 };
 
