@@ -10,11 +10,15 @@ import ButtonComponent from './button';
 //import RadioButtonComponent from './radiobutton';
 import SelectComponent from './select';
 import SenseCheckBoxComponent from './senseCheckbox';
+import { BUTTON_RENDER, SELECT_RENDER } from './definition';
 //import SenseRadioButtonComponent from './senseRadiobutton';
 //"jsx!./multiselect.js"
 
 // Register default renderer
 // Renderers.items.registerDefault(<div />);
+const CHANGE_TITLE = 'title';
+const CHANGE_RENDER = 'render';
+const CHANGE_INIT = 'init';
 
 function filterExcluded(hideExcluded, row) {
   const field = row[0];
@@ -30,17 +34,18 @@ class ListComponent extends Component {
         qSelected: {},
         qLastSelected: -1,
         //qLastField: '',
-        containerWidth: ''
+        containerWidth: '',
+        hideLabel: props.options.hideLabel,
+        isChanging: true, //true,
+        changeType: CHANGE_INIT,//CHANGE_SIZE,
+        renderAs: undefined
       };
+      this._title = undefined;
+      this._main = undefined;
+      this._container = undefined;
     }
 
     componentDidMount() {
-      //let container = React.findDOMNode(this.refs.container);
-      //if(container) {
-        //$(container).on('tap', this.clickHandler.bind(this));
-        //$(container).on('click', this.clickHandler.bind(this));
-        //$(container).on('touchstart', this.clickHandler.bind(this));
-      //}
       this.recalcSize();
     }
 
@@ -50,12 +55,12 @@ class ListComponent extends Component {
 
     itemsToDraw(items, onItemSelectedCallback) {
       const {
-        renderAs,
         selectionColor,
         transparentStyle,
         itemsLayout,
         showState
       } = this.props.options;
+      const renderAs = this.state.renderAs || this.props.options.renderAs;
 
       const itemWidth = this.getItemWidth(items.length, itemsLayout);
       const Renderer = Renderers.items.get(renderAs);
@@ -86,9 +91,9 @@ class ListComponent extends Component {
 
     render() {
         const {
-          renderAs,
           itemsLayout,
         } = this.props.options;
+        const renderAs = this.state.renderAs || this.props.options.renderAs;
 
         const Container = Renderers.containers.get(renderAs);
         const items = this.getItems();
@@ -104,25 +109,28 @@ class ListComponent extends Component {
             this.state.qLastSelected = field.qElemNumber;
         });
 
-
         if(!isEqual(this.state.qSelected, selection))
           this.state.qSelected = selection;
 
         if((this.props.options.alwaysOneSelected || renderAs === 'select')
-        && items.length > 0
-        && (selectedCount > 1 || selectedCount == 0)) {
+          && items.length > 0 && (selectedCount > 1 || selectedCount == 0)) {
           // select first one if more then one selection exists
           this.selectValues(selectedCount == 0 || this.selectedValuesCount() > 1);
         }
 
         let titleComponent;
         if(!this.props.options.hideLabel) {
-          titleComponent = (
-            <div ref={(c) => this._title = c}
-              className="title qvt-visualization-title">
-              {this.props.options.label}
-            </div>
-          );
+          // if not enought room...
+          if(this.state.hideLabel)
+            this._title = undefined;
+          //   titleComponent = (<span ref={(c) => this._title = c}></span>);
+          else
+            titleComponent = (
+              <div ref={(c) => this._title = c}
+                className="title qvt-visualization-title">
+                {this.props.options.label}
+              </div>
+            );
         }
 
         let containerComponent;
@@ -136,7 +144,8 @@ class ListComponent extends Component {
               containerWidth={this.state.containerWidth}
               titleWidth={this.state.titleWidth}
               selectionColor={this.props.options.selectionColor}
-              transparentStyle={this.props.options.transparentStyle}>
+              transparentStyle={this.props.options.transparentStyle}
+              isChanging={this.state.isChanging}>
             {components}
             </Container>
           );
@@ -145,13 +154,15 @@ class ListComponent extends Component {
             <form ref={(c) => this._container = c }
               onClick={this.clickHandler.bind(this)}
               onTouchStart={this.clickHandler.bind(this)}
-              >
+              style={{visibility: this.state.isChanging ? 'hidden' : 'visible'}}
+            >
             {components}
             </form>
           );
 
         return (
-          <div ref={(c) => this._main = c} className="qv-object-simple-list main">
+          <div ref={(c) => this._main = c} className="qv-object-simple-list main"
+            style={{height: "100%"}}>
             {titleComponent}
             {containerComponent}
           </div>
@@ -178,11 +189,114 @@ class ListComponent extends Component {
 
     getItemWidth(itemsCount, itemsLayout) {
       return this.state.containerWidth
-        || (itemsLayout === 'h' ? 100.0 / itemsCount + '%' : '100%');
+        || (itemsLayout === 'h' ? Math.floor(100.0 / itemsCount) + '%' : '100%');
+    }
+
+    hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth}) {
+      if(this.state.isChanging && this.state.changeType != CHANGE_TITLE)
+        return;
+
+      if(hideLabel !== undefined && this.state.hideLabel != hideLabel) {
+        if(!this.state.isChanging && this.state.hideLabel != hideLabel)
+            this.setState({
+              isChanging: true,
+              changeType: CHANGE_TITLE
+            });
+        else
+          if(itemWidthValue === this.state.itemWidthValue)
+            this.setState({
+              hideLabel,
+              //isChanging: false
+            });
+      } else
+      if(!this.state.isChanging && hideLabel === undefined &&
+        itemWidthValue > this.state.itemWidthValue) {
+        this.setState({
+          containerWidth: itemWidth,
+          itemWidthValue,
+          hideLabel: false,
+          isChanging: true,
+          changeType: CHANGE_TITLE
+        });
+      } else
+      if(this.state.isChanging)
+        this.setState({ isChanging: false, changeType: undefined });
+    }
+
+    changeSize({ itemWidth, titleWidth, itemWidthValue }) {
+      if(this.state.containerWidth !== itemWidth) {
+        let oldItemWidthValue = this.state.itemWidthValue;
+        this.setState({
+          containerWidth: itemWidth,
+          titleWidth,
+          itemWidthValue,
+          isItemWidthGrow: itemWidthValue > oldItemWidthValue ? true : false
+          //isChanging: true
+          //hideLabel: (!titlePos || (titlePos.top < containerPos.top && ) ? true : false)
+        });
+      }
+    }
+
+    changeRenderType(
+      {
+      mainWidth, mainHeight,
+      containerWidth, containerHeight, containerPos,
+      titleWidth, titleHeight, titlePos}
+    ) {
+        if(this.state.isChanging && this.state.changeType != CHANGE_RENDER)
+          return;
+
+        const renderAs = this.props.options.renderAs;
+        let totalHeight = containerHeight;
+        if(titlePos && containerPos && titlePos.top < containerPos.top) {
+          totalHeight += titleHeight;
+        }
+
+        if(renderAs == BUTTON_RENDER && this.props.options.alwaysOneSelected) {
+            if(totalHeight > mainHeight && !this.state.renderAs) {
+              if(!this.state.isChanging) {
+                this.setState({ isChanging: true, changeType: CHANGE_RENDER });
+              } else
+              if(this.state.renderAs != SELECT_RENDER)
+                this.setState({ renderAs: SELECT_RENDER, hideLabel: false, itemWidthValue: undefined, isItemWidthGrow: false });
+              else
+                this.setState({ isChanging: false, changeType: undefined });
+            } else
+            if(this.state.renderAs && !this.state.isChanging) {
+              if(totalHeight <= mainHeight && this.state.isItemWidthGrow) {
+                // try to restore original...
+                this.setState({ renderAs: undefined, isItemWidthGrow: false, isChanging: true, changeType: CHANGE_RENDER })
+              }
+            } else if(this.state.isChanging) {
+              this.setState({ isChanging: false, changeType: undefined });
+            }
+        }
     }
 
     recalcSize(){
-      if(this.props.options.renderAs === 'select') {
+      let renderAs = this.state.renderAs || this.props.options.renderAs;
+      const main = this._main;
+      const main$ = $(main);
+      var mainWidth = main$.innerWidth();
+      var mainHeight = main$.innerHeight();
+
+      const container =this._container &&
+        (this._container.tagName || this._container.base);
+
+      const container$ = $(container);
+      var containerPos = container$.offset();
+      var containerWidth = container$.width();
+      var containerHeight = container$.height();
+
+      const title = this._title;
+      const title$ = $(title);
+      var titleWidth = title$.width();
+      var titleHeight = title$.height();
+      var titlePos = title$.offset();
+
+      const itemCount = this.getItems().length;
+
+      if(renderAs === 'select') {
         // select - special case
         if(this.props.options.hideLabel) {
           if(this.state.containerWidth !== '100%')
@@ -190,56 +304,42 @@ class ListComponent extends Component {
               containerWidth: '100%'
             });
         } else {
-          let main = this._main;
-          let main$ = $(main);
-          let mainWidth = main$.innerWidth();
-          let container = this._container;
-          let container$ = $(container);
-          let containerPos = container$.offset();
-          let title = this._title;
-          let title$ = $(title);
-          let titleWidth = title$.width();
-          let titleHeight = title$.height();
-          let titlePos = title$.offset();
-          let itemWidth = `${mainWidth - titleWidth - 6}px`;
+          var itemWidthValue = mainWidth - titleWidth - 6;
+          var itemWidth = `${itemWidthValue}px`; // - 6
           if(titlePos && containerPos
           && mainWidth - titleWidth <= 44
           && titlePos.top + titleHeight < containerPos.top) {
             itemWidth = '100%';
           }
-          if(this.state.containerWidth !== itemWidth)
-            this.setState({
-              containerWidth: itemWidth,
-              titleWidth
-            });
+
+          var hideLabel = undefined;
+          if(titlePos && containerPos)
+              hideLabel = titlePos.top < containerPos.top ? true : false;
+
+          this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
+          this.changeSize({ itemWidth, itemWidthValue, titleWidth});
         }
       }
-      else
+      else // buttons, etc
       if(this.props.options.itemsLayout === 'h') {
-        let main = this._main;
-        let mainWidth = $(main).innerWidth();
-        let itemCount = this.getItems().length;
-        // let itemCount = this.props.options.data
-        // .filter(filterExcluded.bind(null, this.props.options.hideExcluded))
-        // .length;
-        // this.props.options.data.length;
 
         if(this.props.options.hideLabel) {
-          let itemWidth = `${(100.0 / itemCount)}%`; // Math.floor
-          if(this.state.containerWidth !== itemWidth)
-            this.setState({
-              containerWidth: itemWidth
-            });
+            var itemWidth = `${(100.0 / itemCount)}%`; // Math.floor
+            if(this.state.containerWidth !== itemWidth)
+              this.setState({
+                containerWidth: itemWidth
+              });
         } else {
-            let title = this._title;
-            let titleWidth = $(title).width();
             if(itemCount > 0) {
-              let itemWidth = `${Math.floor((mainWidth - titleWidth) / itemCount - 2)}px`;
-              if(this.state.containerWidth !== itemWidth)
-                this.setState({
-                  containerWidth: itemWidth,
-                  titleWidth
-                });
+              var hideLabel = undefined;
+              if(titlePos && containerPos)
+                  hideLabel = titlePos.top < containerPos.top ? true : false;
+
+              var itemWidthValue = Math.floor((mainWidth - titleWidth) / itemCount - 6); //
+              var itemWidth = `${Math.floor(itemWidthValue)}px`; // - 6
+
+              this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
+              this.changeSize({ itemWidth, itemWidthValue, titleWidth});
             }
         }
       } else {
@@ -249,6 +349,14 @@ class ListComponent extends Component {
             containerWidth: ''
           });
       }
+
+      this.changeRenderType({
+        mainWidth, mainHeight,
+        containerWidth, containerHeight, containerPos,
+        titleWidth, titleHeight, titlePos });
+
+      if(this.state.isChanging && this.state.changeType == CHANGE_INIT)
+        this.setState({ isChanging : false, changeType: undefined });
     }
 
     // e, dummy, data

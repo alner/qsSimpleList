@@ -1,5 +1,10 @@
 import RemoveButtonComponent from './definitionComponents';
 
+export const BUTTON_RENDER = 'button';
+export const CHECKBOX_RENDER = 'sensecheckbox';
+export const SWITCH_RENDER = 'senseswitch';
+export const SELECT_RENDER = 'select';
+
 let dimensions = {
   type : "items",
   translation : "Common.Dimension",
@@ -234,7 +239,7 @@ let settings = {
           label : "Render as",
           ref : "renderAs",
           options : [{
-            value : "button",
+            value : BUTTON_RENDER,
             label : "Buttons"
           },
           /*
@@ -248,11 +253,11 @@ let settings = {
           },
           */
           {
-            value : "sensecheckbox",
+            value : CHECKBOX_RENDER,
             label : "Check boxes"
           },
           {
-            value : "senseswitch",
+            value : SWITCH_RENDER,
             label : "Switch"
           },
           // {
@@ -260,7 +265,7 @@ let settings = {
           //   label : "Sense radio buttons"
           // },
           {
-            value : "select",
+            value : SELECT_RENDER,
             label : "Select"
           },
           // {
@@ -268,7 +273,7 @@ let settings = {
           //   label : "Multi select"
           // }
           ],
-          defaultValue : "button"
+          defaultValue : BUTTON_RENDER
         },
         showState: {
           type: "boolean",

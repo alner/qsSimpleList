@@ -3,10 +3,14 @@ import Renderers from './renderers';
 
 export default class SelectComponent extends Component {
     render() {
-      var width = this.props.itemWidth;
-      var style = {
+      const width = this.props.itemWidth;
+      const isChanging = this.props.isChanging;
+      let style = {
         width: "100%"
       };
+      if(isChanging) {
+        style.visibility = 'hidden';
+      }
 
       let className;
       if(this.props.transparentStyle) {

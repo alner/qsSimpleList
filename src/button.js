@@ -84,10 +84,14 @@ export default class ButtonComponent extends Component {
 export class ButtonGroupComponent extends Component {
   render(props) {
     // const width = this.props.containerWidth;
-    const titleWidth = this.props.titleWidth;
+    const { titleWidth, isChanging } = this.props;
     let style = {
-      width: '100%'
+      width: '100%',
+      position: 'relative'
     };
+    if(isChanging) {
+      style.visibility = 'hidden';
+    }
 
     if(titleWidth)
       style = {
