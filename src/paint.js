@@ -9,8 +9,10 @@ export default function setupPaint({ Qlik }) {
       const label = layout.qListObject.qDimensionInfo.qFallbackTitle;
       const data = layout.qListObject.qDataPages[0].qMatrix;
       const fieldName = layout.qListObject.qDimensionInfo.qGroupFieldDefs[layout.qListObject.qDimensionInfo.qGroupPos].replace(/^=/, '');
+      const variableName = layout.variable;
       const app = Qlik.currApp();
       const field = app.field(fieldName);
+      const variableAPI = app.variable;
       const alwaysOneSelected = layout.alwaysOneSelected || (layout.renderAs === 'select');
       const selectionColor = 'rgb(70, 198, 70)';
       let options = {
@@ -19,6 +21,8 @@ export default function setupPaint({ Qlik }) {
         label,
         data,
         field,
+        variableAPI,
+        variableName,
         selectionColor,
         alwaysOneSelected
         // renderAs,

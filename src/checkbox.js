@@ -18,7 +18,7 @@ export default class CheckBoxComponent extends Component {
 
       return (
         <div style={itemStyle}>
-          <input type="checkbox" data-value={data} className={className} checked={isSelected}></input>
+          <input type="checkbox" data-value={data} data-text={text} className={className} checked={isSelected}></input>
           {text}
         </div>);
     }

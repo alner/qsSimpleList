@@ -27,7 +27,12 @@ export default class SelectComponent extends Component {
 
       return (
         <select ref={(c) => this._select = c}
-        onChange={this.props.changeHandler}
+        onChange={(e)=> {
+          this.props.changeHandler(e, {
+              value: e.target.value,
+              text: e.target.options[e.target.selectedIndex].text
+          });
+        }}
         onTouchStart={() => {
           // prevent strange behavior on iOS
           // (without it needs two taps, first tap - focus, second - open select)

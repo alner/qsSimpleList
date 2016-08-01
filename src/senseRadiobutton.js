@@ -22,8 +22,8 @@ export default class SenseRadioButtonComponent extends Component {
       return (<div className={"qui-radiobutton"} style={itemStyle}>
               <input type="radio" data-value={data} checked={isSelected} />
               <div className={"radio-wrap"}>
-                <span data-value={data} className={"radio"} style={checkStyle} />
-                <span data-value={data} className={"radio-text"}>{text}</span>
+                <span data-value={data} data-text={text} className={"radio"} style={checkStyle} />
+                <span data-value={data} data-text={text} className={"radio-text"}>{text}</span>
               </div>
           </div>);
     }

@@ -72,6 +72,7 @@ export default class ButtonComponent extends Component {
       return (
         <button
           data-value={data}
+          data-text={text}
           className={classNames.join(' ')}
           style={itemStyle}
           title={text}>

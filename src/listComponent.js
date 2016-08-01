@@ -19,6 +19,8 @@ import { BUTTON_RENDER, SELECT_RENDER } from './definition';
 const CHANGE_TITLE = 'title';
 const CHANGE_RENDER = 'render';
 const CHANGE_INIT = 'init';
+const CHANGE_HORIZONTAL_SCROLL = 'horizontalScroll';
+const CHANGE_VERTICAL_SCROLL = 'verticalScroll';
 
 function filterExcluded(hideExcluded, row) {
   const field = row[0];
@@ -33,12 +35,15 @@ class ListComponent extends Component {
       this.state = {
         qSelected: {},
         qLastSelected: -1,
+        qLastSelectedText: '',
         //qLastField: '',
         containerWidth: '',
         hideLabel: props.options.hideLabel,
         isChanging: true, //true,
         changeType: CHANGE_INIT,//CHANGE_SIZE,
-        renderAs: undefined
+        renderAs: undefined,
+        isHorizontalScroll: false,
+        isVerticalScroll: false
       };
       this._title = undefined;
       this._main = undefined;
@@ -53,7 +58,7 @@ class ListComponent extends Component {
       this.recalcSize();
     }
 
-    itemsToDraw(items, onItemSelectedCallback) {
+    itemsToDraw(items, onItemSelectedCallback /*, onNoSelectionsCallback*/) {
       const {
         selectionColor,
         transparentStyle,
@@ -64,13 +69,15 @@ class ListComponent extends Component {
 
       const itemWidth = this.getItemWidth(items.length, itemsLayout);
       const Renderer = Renderers.items.get(renderAs);
-
-      return items.map(function (row) {
+      //let selectedCount = 0;
+      let components = items.map(function (row) {
         let field = row[0];
         let isSelected = field.qState === 'S' || field.qState === 'L';
 
-        if(isSelected && onItemSelectedCallback)
+        if(isSelected && onItemSelectedCallback) {
           onItemSelectedCallback(field);
+          //++selectedCount;
+        }
 
         return (
         <Renderer
@@ -87,9 +94,19 @@ class ListComponent extends Component {
           showState={showState}
           />);
       });
+
+      // if(selectedCount == 0 && onNoSelectionsCallback)
+      //   onNoSelectionsCallback();
+
+      return components;
+    }
+
+    isAlwaysOneSelected(){
+      return this.props.options.alwaysOneSelected || this.props.options.renderAs === 'select';
     }
 
     render() {
+        const self = this;
         const {
           itemsLayout,
         } = this.props.options;
@@ -101,21 +118,33 @@ class ListComponent extends Component {
 
         let selectedCount = 0;
         let selection = {};
-        let components = this.itemsToDraw(items, (field) => {
-          ++selectedCount;
-          selection[field.qElemNumber] = field.qElemNumber;
+        let components = this.itemsToDraw(items,
+          // selections callback
+          (field) => {
+            ++selectedCount;
+            selection[field.qElemNumber] = field.qElemNumber;
 
-          if(this.state.qLastSelected !== field.qElemNumber)
-            this.state.qLastSelected = field.qElemNumber;
-        });
+            if(this.state.qLastSelected !== field.qElemNumber)
+              this.state.qLastSelected = field.qElemNumber;
+
+            if(this.state.qLastSelectedText !== field.qText)
+              this.state.qLastSelectedText = field.qText;
+          }
+        );
 
         if(!isEqual(this.state.qSelected, selection))
           this.state.qSelected = selection;
 
-        if((this.props.options.alwaysOneSelected || renderAs === 'select')
-          && items.length > 0 && (selectedCount > 1 || selectedCount == 0)) {
+        if(this.isAlwaysOneSelected() && items.length > 0
+        && (selectedCount > 1 || selectedCount == 0)) {
+          let selectVariable = selectedCount == 0 && this.props.options.variable;
+          if(!selectVariable)
+            this.state.qLastSelectedText = items[0][0].qText; // to set variable value
           // select first one if more then one selection exists
-          this.selectValues(selectedCount == 0 || this.selectedValuesCount() > 1);
+          this.selectValues({
+            selectFirst: selectedCount == 0 || this.selectedValuesCount() > 1,
+            selectVariable
+          });
         }
 
         let titleComponent;
@@ -160,9 +189,15 @@ class ListComponent extends Component {
             </form>
           );
 
+        let styles = {
+          height: "100%",
+          overflowX: this.state.isHorizontalScroll ? 'scroll' : 'initial',
+          overflowY: this.state.isVerticalScroll ? 'scroll' : 'initial'
+        };
+
         return (
           <div ref={(c) => this._main = c} className="qv-object-simple-list main"
-            style={{height: "100%"}}>
+            style={styles}>
             {titleComponent}
             {containerComponent}
           </div>
@@ -243,7 +278,7 @@ class ListComponent extends Component {
       containerWidth, containerHeight, containerPos,
       titleWidth, titleHeight, titlePos}
     ) {
-        if(this.state.isChanging && this.state.changeType != CHANGE_RENDER)
+        if(this.state.isChanging && this.state.changeType !== CHANGE_RENDER)
           return;
 
         const renderAs = this.props.options.renderAs;
@@ -252,7 +287,9 @@ class ListComponent extends Component {
           totalHeight += titleHeight;
         }
 
-        if(renderAs == BUTTON_RENDER && this.props.options.alwaysOneSelected) {
+        if(renderAs == BUTTON_RENDER
+          && this.props.options.itemsLayout === 'h'
+          && this.props.options.alwaysOneSelected) {
             if(totalHeight > mainHeight && !this.state.renderAs) {
               if(!this.state.isChanging) {
                 this.setState({ isChanging: true, changeType: CHANGE_RENDER });
@@ -271,6 +308,60 @@ class ListComponent extends Component {
               this.setState({ isChanging: false, changeType: undefined });
             }
         }
+    }
+
+    changeScroll({
+      mainWidth, mainHeight,
+      containerWidth, containerHeight, containerPos,
+      titleWidth, titleHeight, titlePos})
+    {
+      if(this.state.isChanging)
+          // && (this.state.changeType !== CHANGE_HORIZONTAL_SCROLL
+          // && this.state.changeType !== CHANGE_VERTICAL_SCROLL))
+        return;
+
+      const renderAs = this.props.options.renderAs;
+
+      let totalHeight = containerHeight;
+      if(titlePos && containerPos && titlePos.top < containerPos.top) {
+        totalHeight += titleHeight;
+      }
+
+      // vertical buttons
+      if(renderAs == BUTTON_RENDER
+      && this.props.options.itemsLayout === 'v') {
+        if(totalHeight > mainHeight
+          && !this.state.isVerticalScroll) {
+          //&& !this.state.changeType) {
+          //this.setState({ isChanging: true, isVerticalScroll: true, changeType: CHANGE_VERTICAL_SCROLL });
+          this.setState({ isVerticalScroll: true });
+        }
+        // else
+        // if(this.state.changeType === CHANGE_VERTICAL_SCROLL) {
+        //   this.setState({ isChanging: false, isVerticalScroll: true, changeType: undefined });
+        // }
+        else if(totalHeight < mainHeight && this.state.isVerticalScroll) {
+          this.setState({ isVerticalScroll: false });
+        }
+      }
+      else
+      // horizontal buttons
+      if(renderAs == BUTTON_RENDER
+      && this.props.options.itemsLayout === 'h') {
+        if(totalHeight > mainHeight
+          && !this.state.isHorizontalScroll) {
+          //&& !this.state.changeType) {
+          //this.setState({ isChanging: true, isHorizontalScroll: true, changeType: CHANGE_HORIZONTAL_SCROLL });
+          this.setState({ isHorizontalScroll: true });
+        }
+        // else
+        // if(this.state.changeType === CHANGE_HORIZONTAL_SCROLL) {
+        //   this.setState({ isChanging: false, isHorizontalScroll: true, changeType: undefined });
+        // }
+        else if(totalHeight < mainHeight && this.state.isHorizontalScroll) {
+          this.setState({ isHorizontalScroll: false });
+        }
+      }
     }
 
     recalcSize(){
@@ -355,6 +446,11 @@ class ListComponent extends Component {
         containerWidth, containerHeight, containerPos,
         titleWidth, titleHeight, titlePos });
 
+      this.changeScroll({
+        mainWidth, mainHeight,
+        containerWidth, containerHeight, containerPos,
+        titleWidth, titleHeight, titlePos });
+
       if(this.state.isChanging && this.state.changeType == CHANGE_INIT)
         this.setState({ isChanging : false, changeType: undefined });
     }
@@ -362,41 +458,63 @@ class ListComponent extends Component {
     // e, dummy, data
     clickHandler(e, data) {
       var value;
+      var text;
       if(data) {
-        value = parseInt(data);
+        value = parseInt(data.value);
+        text = data.text;
       }
       else
       if(e) {
         e.preventDefault();
         e.stopPropagation();
         value = parseInt(e.target.getAttribute("data-value") || e.target.value);
+        text = e.target.getAttribute("data-text") || e.target.text;
       }
 
       if(typeof value === "number" && !isNaN(value))
-        this.makeSelection(value);
+        this.makeSelection(value, text);
 
       return true;
     }
 
-    selectValues(selectFirst){
+    selectValues({ selectFirst, selectVariable } = {false, false}){
       //const qSelf = this.props.options.self;
       const isLockSelection = this.props.options.lockSelection;
       const field = this.props.options.field;
+      const variableAPI = this.props.options.variableAPI;
+      const variable = this.props.options.variable;
+
       // const app = Qlik.currApp();
       // const field = app.field(fieldName);
       if(field) {
         let toSelect = selectFirst ? [0] : values(this.state.qSelected);
-        if(selectFirst)
+        if(selectFirst && !selectVariable)
           this.state.qLastSelected = 0;
 
         if(isLockSelection)
             field.unlock();
 
         //qSelf.backendApi.selectValues(0, toSelect, false);
-        field.select(toSelect, false, false);
+        if(!selectVariable) {
+          field.select(toSelect, false, false).then(() => {
+            if(isLockSelection)
+              field.lock();
+          });
+          // store values into specified variable
+          if(variable && variableAPI) {
+            variableAPI.setStringValue(variable, this.state.qLastSelectedText);
+          }
+        } else
+        if(variable && variableAPI)
+          variableAPI.getContent(variable, (reply) => {
+            let variableValue = (reply.qContent && reply.qContent.qString)
+              || this.state.qLastSelectedText;
 
-        if(isLockSelection)
-          field.lock();
+            field.selectValues([variableValue], false, false).then(() => {
+              if(isLockSelection)
+                field.lock();
+            });
+          });
       }
     }
 
@@ -408,7 +526,7 @@ class ListComponent extends Component {
       return values(this.state.qSelected);
     }
 
-    makeSelection(value){
+    makeSelection(value, text){
       var self = this;
       var selected = self.state.qSelected;
       var lastSelected = self.state.qLastSelected;
@@ -426,6 +544,7 @@ class ListComponent extends Component {
           delete selected[value];
 
       self.state.qSelected = selected;
+      self.state.qLastSelectedText = text;
 
       if(self.props.options.alwaysOneSelected)
         self.state.qLastSelected = value;

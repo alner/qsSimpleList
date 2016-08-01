@@ -72,8 +72,8 @@ export default class SenseCheckBoxComponent extends Component {
               <label className="lui-switch__label onoffswitch-label">
                 <input type="checkbox" className="lui-switch__checkbox onoffswitch-checkbox" checked={isSelected} />
                 <span className="lui-switch__span onoffswitch-span">
-                  <div className="lui-switch__inner onoffswitch-inner" data-value={data}></div>
-                  <div className="lui-switch__switch onoffswitch-switch" data-value={data}></div>
+                  <div className="lui-switch__inner onoffswitch-inner" data-value={data} data-text={text}></div>
+                  <div className="lui-switch__switch onoffswitch-switch" data-value={data} data-text={text}></div>
                 </span>
               </label>
             </div>
@@ -95,8 +95,8 @@ export default class SenseCheckBoxComponent extends Component {
           <label className="lui-checkbox qui-checkbox" style={itemStyle}>
             <input className="lui-checkbox__input" type="checkbox" checked={isSelected} />
             <div className="lui-checkbox__check-wrap check-wrap">
-              <span data-value={data} className="lui-checkbox__check check" style={checkStyle}></span>
-              <span data-value={data} className="lui-checkbox__check-text check-text">{text}</span>
+              <span data-value={data} data-text={text} className="lui-checkbox__check check" style={checkStyle}></span>
+              <span data-value={data} data-text={text} className="lui-checkbox__check-text check-text">{text}</span>
             </div>
           </label>);
       }

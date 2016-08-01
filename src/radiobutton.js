@@ -20,7 +20,7 @@ export default class RadioButtonComponent extends Component {
 				itemStyle = {};
 			}
 
-			return <div style={itemStyle}><input type="radio" data-value={data} className={className} checked={isSelectedItem}></input>{text}</div>;
+			return <div style={itemStyle}><input type="radio" data-value={data} data-text={text} className={className} checked={isSelectedItem}></input>{text}</div>;
 		}
 };
 

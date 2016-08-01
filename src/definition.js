@@ -373,12 +373,30 @@ let settings = {
   }
 };
 
+let addons = {
+  type: "items",
+  component: "expandable-items",
+  translation: "properties.addons",
+  items: {
+    variable: {
+      type: "string",
+      label: "Variable",
+      translation: "Common.Variable",
+      ref: "variable",
+      show: function(data) {
+        return data.renderAs == 'select' || data.alwaysOneSelected;
+      }
+    }
+  }
+};
+
 export default {
   type: "items",
   component: "accordion",
   items: {
     dimensions,
     sorting,
+    addons,
     settings
   }
 };
