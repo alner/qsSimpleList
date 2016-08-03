@@ -4,6 +4,7 @@ export const BUTTON_RENDER = 'button';
 export const CHECKBOX_RENDER = 'sensecheckbox';
 export const SWITCH_RENDER = 'senseswitch';
 export const SELECT_RENDER = 'select';
+//export const POPUP_RENDER = 'popup';
 
 let dimensions = {
   type : "items",
@@ -338,6 +339,12 @@ let settings = {
           type: "boolean",
           label: "Transparent style",
           ref: "transparentStyle",
+          defaultValue: false,
+        },
+        compactMode: {
+          type: "boolean",
+          label: "Compact mode",
+          ref: "compactMode",
           defaultValue: false,
         },
         /*

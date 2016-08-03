@@ -22,28 +22,12 @@ export default class ButtonComponent extends Component {
         //className = "lui-button lui-button--toolbar qui-button";
         classNames.push('lui-button--toolbar');
 
-      //let cStyle = {};
-      // <div className={cStyle}>
       if(itemsLayout === "h") {
         classNames.push('btns--horizontal');
-        // Horizontal buttons
-        // itemStyle = {
-        // //"width": "auto",
-        // "float": "left",
-        // "borderRadius": "0px",
-        // "overflow": "hidden"
-        // };
       } else {
         classNames.push('btns--vertical');
-        // Vertical buttons
-        // itemStyle = {
-        //   "clear": "both",
-        //   "borderRadius": "0px",
-        //   "width": "100%",
-        //   "overflow": "hidden"
-        // };
       }
-      //console.log(state);
+
       if(showState)
       switch(state) {
         case 'X':
@@ -85,13 +69,18 @@ export default class ButtonComponent extends Component {
 export class ButtonGroupComponent extends Component {
   render(props) {
     // const width = this.props.containerWidth;
-    const { titleWidth, isChanging } = this.props;
+    const { titleWidth, isChanging, isScroll, isPopup, isHidden } = this.props;
+    const paddingLeft = isPopup || isScroll ? "47px" : "0"
     let style = {
-      width: '100%',
+      width: `calc(100% - ${paddingLeft})`,
       position: 'relative'
+      //position: isPopup ? 'fixed' : 'relative',
     };
-    if(isChanging) {
+    if(isChanging || isHidden) {
       style.visibility = 'hidden';
+    }
+    if(isScroll) {
+      style.paddingLeft = paddingLeft;
     }
 
     if(titleWidth)

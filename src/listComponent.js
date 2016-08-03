@@ -1,7 +1,6 @@
 //import React from 'react';
-import {h, Component} from 'preact';
+import {h, Component, render, cloneElement} from 'preact';
 //import Qlik from 'js/qlik';
-//import _ from 'underscore';
 import isEqual from 'lodash.isEqual';
 import values from 'lodash.values';
 import Renderers from './renderers';
@@ -10,7 +9,9 @@ import ButtonComponent from './button';
 //import RadioButtonComponent from './radiobutton';
 import SelectComponent from './select';
 import SenseCheckBoxComponent from './senseCheckbox';
-import { BUTTON_RENDER, SELECT_RENDER } from './definition';
+import { BUTTON_RENDER, SELECT_RENDER, CHECKBOX_RENDER,
+  SWITCH_RENDER } from './definition';
+import { createPopupService } from './popupService.js';
 //import SenseRadioButtonComponent from './senseRadiobutton';
 //"jsx!./multiselect.js"
 
@@ -21,6 +22,9 @@ const CHANGE_RENDER = 'render';
 const CHANGE_INIT = 'init';
 const CHANGE_HORIZONTAL_SCROLL = 'horizontalScroll';
 const CHANGE_VERTICAL_SCROLL = 'verticalScroll';
+const CHANGE_POPUP = 'popup';
+
+const WIDTH_SWITCH_TO_COMPACT = 100; // switch to compact mode if the width is less then the value
 
 function filterExcluded(hideExcluded, row) {
   const field = row[0];
@@ -28,6 +32,7 @@ function filterExcluded(hideExcluded, row) {
     (field.qState != 'X' && field.qState != 'XS' && field.qState != 'XL')
   );
 }
+
 
 class ListComponent extends Component {
     constructor(props) {
@@ -38,16 +43,20 @@ class ListComponent extends Component {
         qLastSelectedText: '',
         //qLastField: '',
         containerWidth: '',
+        containerWidthValue: undefined,
+        containerHeightValue: undefined,
         hideLabel: props.options.hideLabel,
         isChanging: true, //true,
         changeType: CHANGE_INIT,//CHANGE_SIZE,
         renderAs: undefined,
+        isCompactMode: false,
         isHorizontalScroll: false,
         isVerticalScroll: false
       };
       this._title = undefined;
       this._main = undefined;
       this._container = undefined;
+      this.popupService = createPopupService();
     }
 
     componentDidMount() {
@@ -111,13 +120,23 @@ class ListComponent extends Component {
           itemsLayout,
         } = this.props.options;
         const renderAs = this.state.renderAs || this.props.options.renderAs;
+        const compactMode = this.state.isCompactMode
+          || this.props.options.compactMode;
 
         const Container = Renderers.containers.get(renderAs);
         const items = this.getItems();
         const itemWidth = this.getItemWidth(items.length, itemsLayout);
 
+        let isScrollOrPopup = this.state.isHorizontalScroll
+        || this.state.isVerticalScroll
+        || this.popupService.isPopupShow();
+
+        let isPopupHiddenInCompactMode = compactMode && !this.popupService.isPopupShow();
+        let isPopupShowInCompactMode = compactMode && this.popupService.isPopupShow();
+
         let selectedCount = 0;
         let selection = {};
+        let selectedText = [];
         let components = this.itemsToDraw(items,
           // selections callback
           (field) => {
@@ -129,6 +148,8 @@ class ListComponent extends Component {
 
             if(this.state.qLastSelectedText !== field.qText)
               this.state.qLastSelectedText = field.qText;
+
+            selectedText.push(field.qText);
           }
         );
 
@@ -174,34 +195,106 @@ class ListComponent extends Component {
               titleWidth={this.state.titleWidth}
               selectionColor={this.props.options.selectionColor}
               transparentStyle={this.props.options.transparentStyle}
-              isChanging={this.state.isChanging}>
+              isChanging={this.state.isChanging}
+              isScroll={this.state.isHorizontalScroll || this.state.isVerticalScroll}
+              isPopup={this.popupService.isPopupShow()}
+              isHidden={isPopupHiddenInCompactMode}>
             {components}
             </Container>
           );
         else
+        // const paddingLeft = isPopup || isScroll ? "47px" : "0"
           containerComponent = (
             <form ref={(c) => this._container = c }
-              onClick={this.clickHandler.bind(this)}
-              onTouchStart={this.clickHandler.bind(this)}
-              style={{visibility: this.state.isChanging ? 'hidden' : 'visible'}}
-            >
-            {components}
+                onClick={this.clickHandler.bind(this)}
+                onTouchStart={this.clickHandler.bind(this)}
+                style={{
+                  paddingLeft: isScrollOrPopup ? "47px" : "0px",
+                  visibility: isPopupHiddenInCompactMode || this.state.isChanging ? 'hidden' : 'visible'
+                }}
+              >
+              <div style={{display: "inline-block", width: "100%", position: "relative", height: "100%", }}>
+              {components}
+              </div>
             </form>
           );
 
+        let expandComponent;
+        if(compactMode
+          || this.popupService.isPopupShow()
+          || this.state.isHorizontalScroll
+          || this.state.isVerticalScroll) {
+          let expandClickHandler = (e) => {
+            let posElement$ = $(e.currentTarget && e.currentTarget.parentElement);
+            let offset = posElement$.offset();
+            let width = posElement$.width();
+
+            const container =this._container &&
+              (this._container.tagName || this._container.base);
+            let container$ =  $(container);
+            let height = (container$ && container$.height()) ||  posElement$.height();
+
+            this.popupService.setPopupShow(!this.popupService.isPopupShow(), {
+              offset, width, height
+            });
+            this.setState({ isChanging: true, changeType: CHANGE_POPUP});
+          };
+
+          expandComponent = (
+            <button
+              className={`lui-fade-button qui-button btn-expand ${isPopupHiddenInCompactMode ? 'lui-button--compactmode' : ''} ${selectedCount > 0 ? 'lui-button--hasselections' : ''}`}
+              title={selectedText.join(', ') || this.props.options.label}
+              onClick={ expandClickHandler }>
+            {!this.popupService.isPopupShow() ?
+              <span className="lui-icon lui-button__icon lui-icon--menu"></span>
+              :
+              <span className="lui-icon lui-button__icon lui-icon--close"></span>
+            }
+            {isPopupHiddenInCompactMode && selectedText.length == 0 ?
+              <span className="lui-button__text expand-text">{this.props.options.label}</span>
+              :
+              (isPopupHiddenInCompactMode && selectedText.length > 0 ?
+                <span className="lui-button__text expand-text">{this.props.options.label}: {selectedText.join(', ')}</span>
+              :
+              undefined)
+            }
+            </button>
+          );
+        }
+
         let styles = {
           height: "100%",
-          overflowX: this.state.isHorizontalScroll ? 'scroll' : 'initial',
-          overflowY: this.state.isVerticalScroll ? 'scroll' : 'initial'
+        };
+        if(isPopupHiddenInCompactMode) {
+          styles.overflow = 'hidden';
+        } else
+        if(isPopupShowInCompactMode) {
+          styles.overflow = 'auto';
+        } else {
+          styles.overflowX = (this.state.isHorizontalScroll) ? 'scroll' : 'initial';
+          styles.overflowY = (this.state.isVerticalScroll) ? 'scroll' : 'initial';
         };
 
-        return (
+        const simpleListComponent = (
           <div ref={(c) => this._main = c} className="qv-object-simple-list main"
             style={styles}>
             {titleComponent}
+            {expandComponent}
             {containerComponent}
           </div>
         );
+
+        // if(this.popupService.isPopupShow())
+        //   this.popupService.showAsPopup(simpleListComponent);
+
+        if(this.popupService.isPopupShow()) {
+          //let cloned = cloneElement(simpleListComponent, {});
+          this.popupService.showAsPopup(simpleListComponent); // simpleListComponent
+        } else {
+          this.popupService.removePopupIfExists();
+        }
+
+        return simpleListComponent;
     }
 
     getItems(){
@@ -255,25 +348,47 @@ class ListComponent extends Component {
         });
       } else
       if(this.state.isChanging)
-        this.setState({ isChanging: false, changeType: undefined });
+        this.setState({ isChanging: false, changeType: null });
     }
 
-    changeSize({ itemWidth, titleWidth, itemWidthValue }) {
-      if(this.state.containerWidth !== itemWidth) {
+    changeSize({ itemWidth, titleWidth, itemWidthValue,
+      containerWidth, containerHeight }) {
+      // if size was changed ...
+      let containerRealSizeChanged = this.state.containerWidthValue !== containerWidth
+        || this.state.containerHeightValue !== containerHeight;
+
+      if(this.state.containerWidth !== itemWidth || containerRealSizeChanged) {
         let oldItemWidthValue = this.state.itemWidthValue;
+
+        // let newState = { itemWidth };
+        // if(titleWidth != undefined)
+        //   newState.titleWidth = titleWidth;
+        //
+        // if(itemWidthValue != undefined) {
+        //   newState.itemWidthValue = itemWidthValue;
+        //   newState.isItemWidthGrow = itemWidthValue > oldItemWidthValue ? true : false;
+        // }
+        //this.setState(newState);
+
         this.setState({
           containerWidth: itemWidth,
           titleWidth,
           itemWidthValue,
-          isItemWidthGrow: itemWidthValue > oldItemWidthValue ? true : false
+          isItemWidthGrow: itemWidthValue > oldItemWidthValue ? true : false,
+          containerWidthValue: containerWidth,
+          containerHeightValue: containerHeight
           //isChanging: true
           //hideLabel: (!titlePos || (titlePos.top < containerPos.top && ) ? true : false)
         });
+
+        if(containerRealSizeChanged
+          && this.state.changeType !== CHANGE_POPUP
+          && !this.state.isCompactMode)
+          this.popupService.removePopupIfExists();
       }
     }
 
-    changeRenderType(
-      {
+    changeRenderType({
       mainWidth, mainHeight,
       containerWidth, containerHeight, containerPos,
       titleWidth, titleHeight, titlePos}
@@ -282,9 +397,24 @@ class ListComponent extends Component {
           return;
 
         const renderAs = this.props.options.renderAs;
+
         let totalHeight = containerHeight;
         if(titlePos && containerPos && titlePos.top < containerPos.top) {
           totalHeight += titleHeight;
+        }
+
+        if(containerWidth <= WIDTH_SWITCH_TO_COMPACT
+          && !this.state.isCompactMode) {
+          this.setState({
+            isCompactMode: true
+          });
+        } else
+        if(this.state.isCompactMode) {
+          if(containerWidth > WIDTH_SWITCH_TO_COMPACT) {
+              this.setState({
+                isCompactMode: false
+              });
+          }
         }
 
         if(renderAs == BUTTON_RENDER
@@ -305,8 +435,14 @@ class ListComponent extends Component {
                 this.setState({ renderAs: undefined, isItemWidthGrow: false, isChanging: true, changeType: CHANGE_RENDER })
               }
             } else if(this.state.isChanging) {
-              this.setState({ isChanging: false, changeType: undefined });
+              this.setState({ isChanging: false, changeType: null });
             }
+        } else
+        if(this.state.isChanging){
+          this.setState({
+            isChanging: false,
+            changeType: null
+          });
         }
     }
 
@@ -327,8 +463,11 @@ class ListComponent extends Component {
         totalHeight += titleHeight;
       }
 
-      // vertical buttons
-      if(renderAs == BUTTON_RENDER
+      // vertical buttons CHECKBOX_RENDER, SWITCH_RENDER
+      if((renderAs == BUTTON_RENDER
+        || renderAs == CHECKBOX_RENDER
+        || renderAs == SWITCH_RENDER
+      )
       && this.props.options.itemsLayout === 'v') {
         if(totalHeight > mainHeight
           && !this.state.isVerticalScroll) {
@@ -346,7 +485,10 @@ class ListComponent extends Component {
       }
       else
       // horizontal buttons
-      if(renderAs == BUTTON_RENDER
+      if((renderAs == BUTTON_RENDER
+        || renderAs == CHECKBOX_RENDER
+        || renderAs == SWITCH_RENDER
+      )
       && this.props.options.itemsLayout === 'h') {
         if(totalHeight > mainHeight
           && !this.state.isHorizontalScroll) {
@@ -408,7 +550,8 @@ class ListComponent extends Component {
               hideLabel = titlePos.top < containerPos.top ? true : false;
 
           this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
-          this.changeSize({ itemWidth, itemWidthValue, titleWidth});
+          this.changeSize({ itemWidth, itemWidthValue, titleWidth,
+            containerWidth, containerHeight });
         }
       }
       else // buttons, etc
@@ -416,10 +559,11 @@ class ListComponent extends Component {
 
         if(this.props.options.hideLabel) {
             var itemWidth = `${(100.0 / itemCount)}%`; // Math.floor
-            if(this.state.containerWidth !== itemWidth)
-              this.setState({
-                containerWidth: itemWidth
-              });
+            this.changeSize({ itemWidth, containerWidth, containerHeight });
+            // if(this.state.containerWidth !== itemWidth)
+            //   this.setState({
+            //     containerWidth: itemWidth
+            //   });
         } else {
             if(itemCount > 0) {
               var hideLabel = undefined;
@@ -430,15 +574,16 @@ class ListComponent extends Component {
               var itemWidth = `${Math.floor(itemWidthValue)}px`; // - 6
 
               this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
-              this.changeSize({ itemWidth, itemWidthValue, titleWidth});
+              this.changeSize({ itemWidth, itemWidthValue, titleWidth, containerWidth, containerHeight });
             }
         }
       } else {
         // vertical
-        if(this.state.containerWidth !== '')
-          this.setState({
-            containerWidth: ''
-          });
+        // if(this.state.containerWidth !== '')
+        //   this.setState({
+        //     containerWidth: ''
+        //   });
+        this.changeSize({ itemWidth: '', containerWidth, containerHeight });
       }
 
       this.changeRenderType({
@@ -451,8 +596,9 @@ class ListComponent extends Component {
         containerWidth, containerHeight, containerPos,
         titleWidth, titleHeight, titlePos });
 
-      if(this.state.isChanging && this.state.changeType == CHANGE_INIT)
-        this.setState({ isChanging : false, changeType: undefined });
+      if(this.state.isChanging
+      && (this.state.changeType == CHANGE_INIT || this.state.changeType == CHANGE_POPUP))
+        this.setState({ isChanging : false, changeType: null });
     }
 
     // e, dummy, data

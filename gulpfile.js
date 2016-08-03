@@ -52,7 +52,8 @@ gulp.task('less2css', function(){
     plugins: [autoprefix]
    }))
   .pipe(minifyCSS({keepSpecialComments : 0}))
-  .pipe(gulp.dest(buildDest));
+  .pipe(gulp.dest(buildDest))
+  .pipe(gulp.dest(deployDest));
 });
 
 gulp.task('css', function(){

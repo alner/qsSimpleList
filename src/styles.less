@@ -4,6 +4,30 @@
   height: 100%;
   overflow: auto;
 }
+
+.sl-popup-tooltip {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: white;//#F2F2F2;
+  color: #595959;
+  box-shadow: 0 5px 10px 0 rgba(128, 128, 128, 0.4);
+  font-family: 'QlikView Sans', sans-serif;
+  z-index: 10;
+  border-radius: 5px;
+  background-clip: padding-box;
+  padding: 10px 5px 5px 5px;
+  cursor: default;
+}
+
+.sl-popup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
 .qv-object-simple-list {
   .title {
     position: relative;
@@ -14,6 +38,16 @@
     color: #808080;
     vertical-align: middle;
     padding: 2px;
+  }
+
+  .btn-expand {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 2;
+    border: 0;
+    box-shadow: none !important;
   }
 
   .touch {
@@ -67,5 +101,31 @@
     //padding: 0 16px;
     //border: 1px solid #52a2cc;
     box-shadow: none !important;
+  }
+
+  .lui-checkbox {
+    display: inline-block;
+  }
+
+  .lui-button--hasselections {
+    color: #61a729;
+  }
+
+  .lui-button--compactmode {
+    width: 100%;
+    white-space: nowrap;
+    height: 100%;
+  }
+
+  .lui-button--compactmode:after {
+    clear:both;
+    content:" ";
+    display:block;
+  }
+
+  .expand-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90%;
   }
 }
