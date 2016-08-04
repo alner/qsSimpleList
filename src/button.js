@@ -70,23 +70,22 @@ export class ButtonGroupComponent extends Component {
   render(props) {
     // const width = this.props.containerWidth;
     const { titleWidth, isChanging, isScroll, isPopup, isHidden } = this.props;
-    const paddingLeft = isPopup || isScroll ? "47px" : "0"
+    const paddingLeft = isPopup || isScroll ? 47 : 0;
+    let shift = paddingLeft;
+    if(titleWidth)
+        shift += titleWidth;
+
     let style = {
-      width: `calc(100% - ${paddingLeft})`,
-      position: 'relative'
+      width: `calc(100% - ${shift}px)`,
+      position: 'relative',
       //position: isPopup ? 'fixed' : 'relative',
     };
     if(isChanging || isHidden) {
       style.visibility = 'hidden';
     }
-    if(isScroll) {
-      style.paddingLeft = paddingLeft;
+    if(isPopup || isScroll) {
+      style.paddingLeft = `${paddingLeft}px`;
     }
-
-    if(titleWidth)
-      style = {
-        width: `calc(100%-${titleWidth}px)`
-      };
 
     // if(width) {
     //   style.width = width;
@@ -94,8 +93,21 @@ export class ButtonGroupComponent extends Component {
 
     return (
       <div class="lui-buttongroup qui-buttongroup" style={style}
-        onClick={props.changeHandler}
-        onTouchStart={props.changeHandler}>
+        onClick={(e) => {
+          if(this._tid)
+            clearTimeout(this._tid);
+          props.changeHandler && props.changeHandler(e);
+        }}
+        onTouchStart={(e) => {
+          this._tid = setTimeout(() => {
+            props.changeHandler && props.changeHandler(e);
+          }, 250);
+        }}
+        onTouchMove={()=>{
+          if(this._tid)
+            clearTimeout(this._tid);
+        }}
+        >
         {props.children}
       </div>
     );

@@ -346,6 +346,9 @@ let settings = {
           label: "Compact mode",
           ref: "compactMode",
           defaultValue: false,
+          show: function(data){
+            return !(data.renderAs === 'select');
+          }
         },
         /*
         itemsLayout: {

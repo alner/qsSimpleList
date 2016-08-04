@@ -67,6 +67,10 @@ class ListComponent extends Component {
       this.recalcSize();
     }
 
+    componentWillUnmount(){
+      this.popupService.removePopupIfExists();
+    }
+
     itemsToDraw(items, onItemSelectedCallback /*, onNoSelectionsCallback*/) {
       const {
         selectionColor,
@@ -120,15 +124,21 @@ class ListComponent extends Component {
           itemsLayout,
         } = this.props.options;
         const renderAs = this.state.renderAs || this.props.options.renderAs;
-        const compactMode = this.state.isCompactMode
-          || this.props.options.compactMode;
+        const compactMode = (this.state.isCompactMode
+          || this.props.options.compactMode);
 
         const Container = Renderers.containers.get(renderAs);
         const items = this.getItems();
         const itemWidth = this.getItemWidth(items.length, itemsLayout);
 
-        let isScrollOrPopup = this.state.isHorizontalScroll
-        || this.state.isVerticalScroll
+        const isScroll = this.state.isHorizontalScroll
+        || this.state.isVerticalScroll;
+
+        const isExpandButtonShow = (compactMode || isScroll
+          || this.popupService.isPopupShow())
+          && renderAs !== SELECT_RENDER;
+
+        const isScrollOrPopup = isScroll
         || this.popupService.isPopupShow();
 
         let isPopupHiddenInCompactMode = compactMode && !this.popupService.isPopupShow();
@@ -171,10 +181,10 @@ class ListComponent extends Component {
         let titleComponent;
         if(!this.props.options.hideLabel) {
           // if not enought room...
-          if(this.state.hideLabel)
-            this._title = undefined;
+          if(this.state.hideLabel || isExpandButtonShow) {
+            this._title = null;
           //   titleComponent = (<span ref={(c) => this._title = c}></span>);
-          else
+          } else
             titleComponent = (
               <div ref={(c) => this._title = c}
                 className="title qvt-visualization-title">
@@ -206,8 +216,25 @@ class ListComponent extends Component {
         // const paddingLeft = isPopup || isScroll ? "47px" : "0"
           containerComponent = (
             <form ref={(c) => this._container = c }
-                onClick={this.clickHandler.bind(this)}
-                onTouchStart={this.clickHandler.bind(this)}
+                //onClick={this.clickHandler.bind(this)}
+                //onTouchStart={this.clickHandler.bind(this)}
+                onClick={(e) => {
+                  if(this._tid)
+                    clearTimeout(this._tid);
+
+                  this.clickHandler(e);
+                }}
+                onTouchStart={(e) => {
+                  this._tid = setTimeout(() => {
+                    this.clickHandler(e);
+                  }, 250);
+                }}
+                onTouchMove={()=>{
+                  if(this._tid) {
+                    clearTimeout(this._tid);
+                    this._tid = null;
+                  }
+                }}
                 style={{
                   paddingLeft: isScrollOrPopup ? "47px" : "0px",
                   visibility: isPopupHiddenInCompactMode || this.state.isChanging ? 'hidden' : 'visible'
@@ -220,11 +247,10 @@ class ListComponent extends Component {
           );
 
         let expandComponent;
-        if(compactMode
-          || this.popupService.isPopupShow()
-          || this.state.isHorizontalScroll
-          || this.state.isVerticalScroll) {
+        if(isExpandButtonShow) {
           let expandClickHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             let posElement$ = $(e.currentTarget && e.currentTarget.parentElement);
             let offset = posElement$.offset();
             let width = posElement$.width();
@@ -243,8 +269,9 @@ class ListComponent extends Component {
           expandComponent = (
             <button
               className={`lui-fade-button qui-button btn-expand ${isPopupHiddenInCompactMode ? 'lui-button--compactmode' : ''} ${selectedCount > 0 ? 'lui-button--hasselections' : ''}`}
-              title={selectedText.join(', ') || this.props.options.label}
-              onClick={ expandClickHandler }>
+              title={`${this.props.options.label}: ${selectedText.join(', ')}`}
+              onClick={ expandClickHandler }
+              onTouchStart={ expandClickHandler }>
             {!this.popupService.isPopupShow() ?
               <span className="lui-icon lui-button__icon lui-icon--menu"></span>
               :
@@ -273,10 +300,11 @@ class ListComponent extends Component {
         } else {
           styles.overflowX = (this.state.isHorizontalScroll) ? 'scroll' : 'initial';
           styles.overflowY = (this.state.isVerticalScroll) ? 'scroll' : 'initial';
+          //styles.webkitOverflowScrolling = 'touch';
         };
 
         const simpleListComponent = (
-          <div ref={(c) => this._main = c} className="qv-object-simple-list main"
+          <div ref={(c) => this._main = c} className="qv-object-simple-list qv-object-sl-touch"
             style={styles}>
             {titleComponent}
             {expandComponent}
@@ -404,7 +432,8 @@ class ListComponent extends Component {
         }
 
         if(containerWidth <= WIDTH_SWITCH_TO_COMPACT
-          && !this.state.isCompactMode) {
+          && !this.state.isCompactMode
+          && renderAs != SELECT_RENDER) {
           this.setState({
             isCompactMode: true
           });
@@ -418,6 +447,7 @@ class ListComponent extends Component {
         }
 
         if(renderAs == BUTTON_RENDER
+          && !this.props.options.compactMode
           && this.props.options.itemsLayout === 'h'
           && this.props.options.alwaysOneSelected) {
             if(totalHeight > mainHeight && !this.state.renderAs) {
@@ -432,7 +462,7 @@ class ListComponent extends Component {
             if(this.state.renderAs && !this.state.isChanging) {
               if(totalHeight <= mainHeight && this.state.isItemWidthGrow) {
                 // try to restore original...
-                this.setState({ renderAs: undefined, isItemWidthGrow: false, isChanging: true, changeType: CHANGE_RENDER })
+                this.setState({ renderAs: null, isItemWidthGrow: false, isChanging: true, changeType: CHANGE_RENDER })
               }
             } else if(this.state.isChanging) {
               this.setState({ isChanging: false, changeType: null });
@@ -523,9 +553,14 @@ class ListComponent extends Component {
 
       const title = this._title;
       const title$ = $(title);
-      var titleWidth = title$.width();
-      var titleHeight = title$.height();
-      var titlePos = title$.offset();
+      var titleWidth; // = title$.width() + 6;
+      var titleHeight; // = title$.height();
+      var titlePos; // = title$.offset();
+      if(title) {
+        titleWidth = title$.width() + 6;
+        titleHeight = title$.height();
+        titlePos = title$.offset();
+      }
 
       const itemCount = this.getItems().length;
 
@@ -545,11 +580,11 @@ class ListComponent extends Component {
             itemWidth = '100%';
           }
 
-          var hideLabel = undefined;
-          if(titlePos && containerPos)
-              hideLabel = titlePos.top < containerPos.top ? true : false;
-
-          this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
+          // var hideLabel = undefined;
+          // if(titlePos && containerPos)
+          //     hideLabel = titlePos.top < containerPos.top ? true : false;
+          //
+          // this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
           this.changeSize({ itemWidth, itemWidthValue, titleWidth,
             containerWidth, containerHeight });
         }
@@ -559,7 +594,8 @@ class ListComponent extends Component {
 
         if(this.props.options.hideLabel) {
             var itemWidth = `${(100.0 / itemCount)}%`; // Math.floor
-            this.changeSize({ itemWidth, containerWidth, containerHeight });
+            this.changeSize({ itemWidth,
+              containerWidth, containerHeight });
             // if(this.state.containerWidth !== itemWidth)
             //   this.setState({
             //     containerWidth: itemWidth
@@ -573,7 +609,7 @@ class ListComponent extends Component {
               var itemWidthValue = Math.floor((mainWidth - titleWidth) / itemCount - 6); //
               var itemWidth = `${Math.floor(itemWidthValue)}px`; // - 6
 
-              this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
+              //this.hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth});
               this.changeSize({ itemWidth, itemWidthValue, titleWidth, containerWidth, containerHeight });
             }
         }
@@ -611,14 +647,15 @@ class ListComponent extends Component {
       }
       else
       if(e) {
-        e.preventDefault();
-        e.stopPropagation();
         value = parseInt(e.target.getAttribute("data-value") || e.target.value);
         text = e.target.getAttribute("data-text") || e.target.text;
       }
 
-      if(typeof value === "number" && !isNaN(value))
+      if(typeof value === "number" && !isNaN(value)) {
+        e.preventDefault();
+        e.stopPropagation();
         this.makeSelection(value, text);
+      }
 
       return true;
     }

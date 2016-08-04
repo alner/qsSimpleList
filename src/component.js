@@ -30,12 +30,13 @@ define(dependencies,
       || '/extensions/qsSimpleList';
     loadCSS(`${ROOT_URI}/styles.css`);
 
-    const paint = setupPaint({ Qlik });
+    const {paint, destroy} = setupPaint({ Qlik });
 
     return {
       initialProperties,
       definition,
       paint,
+      destroy,
       snapshot: {
         canTakeSnapshot : false
       }
