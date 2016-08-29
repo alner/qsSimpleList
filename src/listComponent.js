@@ -45,6 +45,9 @@ class ListComponent extends Component {
         containerWidth: '',
         containerWidthValue: undefined,
         containerHeightValue: undefined,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        wasGrow: false,
         hideLabel: props.options.hideLabel,
         isChanging: true, //true,
         changeType: CHANGE_INIT,//CHANGE_SIZE,
@@ -298,8 +301,8 @@ class ListComponent extends Component {
         if(isPopupShowInCompactMode) {
           styles.overflow = 'auto';
         } else {
-          styles.overflowX = (this.state.isHorizontalScroll) ? 'scroll' : 'initial';
-          styles.overflowY = (this.state.isVerticalScroll) ? 'scroll' : 'initial';
+          styles.overflowX = (this.state.isHorizontalScroll) ? 'scroll' : 'hidden';
+          styles.overflowY = (this.state.isVerticalScroll) ? 'scroll' : 'hidden';
           //styles.webkitOverflowScrolling = 'touch';
         };
 
@@ -348,6 +351,12 @@ class ListComponent extends Component {
         || (itemsLayout === 'h' ? Math.floor(100.0 / itemsCount) + '%' : '100%');
     }
 
+    commitChanges() {
+      this.setState({ isChanging: false, changeType: null });
+      //this.state.isChanging = false;
+      //this.state.changeType = null;
+    }
+
     hideOrShowTitle({ hideLabel, itemWidthValue, itemWidth}) {
       if(this.state.isChanging && this.state.changeType != CHANGE_TITLE)
         return;
@@ -375,8 +384,10 @@ class ListComponent extends Component {
           changeType: CHANGE_TITLE
         });
       } else
-      if(this.state.isChanging)
-        this.setState({ isChanging: false, changeType: null });
+      if(this.state.isChanging) {
+        this.commitChanges();
+        //this.setState({ isChanging: false, changeType: null });
+      }
     }
 
     changeSize({ itemWidth, titleWidth, itemWidthValue,
@@ -397,6 +408,8 @@ class ListComponent extends Component {
         //   newState.isItemWidthGrow = itemWidthValue > oldItemWidthValue ? true : false;
         // }
         //this.setState(newState);
+        const wasGrow = this.state.windowHeight < window.innerHeight
+          || this.state.windowWidth < window.innerWidth;
 
         this.setState({
           containerWidth: itemWidth,
@@ -404,7 +417,10 @@ class ListComponent extends Component {
           itemWidthValue,
           isItemWidthGrow: itemWidthValue > oldItemWidthValue ? true : false,
           containerWidthValue: containerWidth,
-          containerHeightValue: containerHeight
+          containerHeightValue: containerHeight,
+          wasGrow,
+          windowWidth: window.innerWidth,
+          windowHeight: window.innerHeight
           //isChanging: true
           //hideLabel: (!titlePos || (titlePos.top < containerPos.top && ) ? true : false)
         });
@@ -432,16 +448,21 @@ class ListComponent extends Component {
         }
 
         if(containerWidth <= WIDTH_SWITCH_TO_COMPACT
+          && !this.state.wasGrow
           && !this.state.isCompactMode
           && renderAs != SELECT_RENDER) {
           this.setState({
+            //isChanging: true,
             isCompactMode: true
           });
         } else
         if(this.state.isCompactMode) {
-          if(containerWidth > WIDTH_SWITCH_TO_COMPACT) {
+          if(containerWidth > WIDTH_SWITCH_TO_COMPACT && this.state.wasGrow) {
               this.setState({
-                isCompactMode: false
+                //isChanging: true,
+                isCompactMode: false,
+                //isVerticalScroll: false,
+                //isHorizontalScroll: false
               });
           }
         }
@@ -457,7 +478,8 @@ class ListComponent extends Component {
               if(this.state.renderAs != SELECT_RENDER)
                 this.setState({ renderAs: SELECT_RENDER, hideLabel: false, itemWidthValue: undefined, isItemWidthGrow: false });
               else
-                this.setState({ isChanging: false, changeType: undefined });
+                this.commitChanges();
+                //this.setState({ isChanging: false, changeType: undefined });
             } else
             if(this.state.renderAs && !this.state.isChanging) {
               if(totalHeight <= mainHeight && this.state.isItemWidthGrow) {
@@ -465,14 +487,16 @@ class ListComponent extends Component {
                 this.setState({ renderAs: null, isItemWidthGrow: false, isChanging: true, changeType: CHANGE_RENDER })
               }
             } else if(this.state.isChanging) {
-              this.setState({ isChanging: false, changeType: null });
+              this.commitChanges();
+              //this.setState({ isChanging: false, changeType: null });
             }
         } else
         if(this.state.isChanging){
-          this.setState({
-            isChanging: false,
-            changeType: null
-          });
+          this.commitChanges();
+          // this.setState({
+          //   isChanging: false,
+          //   changeType: null
+          // });
         }
     }
 
@@ -521,17 +545,21 @@ class ListComponent extends Component {
       )
       && this.props.options.itemsLayout === 'h') {
         if(totalHeight > mainHeight
-          && !this.state.isHorizontalScroll) {
+          && !this.state.isVerticalScroll) {
+          //&& !this.state.isHorizontalScroll) {
           //&& !this.state.changeType) {
           //this.setState({ isChanging: true, isHorizontalScroll: true, changeType: CHANGE_HORIZONTAL_SCROLL });
-          this.setState({ isHorizontalScroll: true });
+          //this.setState({ isHorizontalScroll: true });
+          this.setState({ isVerticalScroll: true });
         }
         // else
         // if(this.state.changeType === CHANGE_HORIZONTAL_SCROLL) {
         //   this.setState({ isChanging: false, isHorizontalScroll: true, changeType: undefined });
         // }
-        else if(totalHeight < mainHeight && this.state.isHorizontalScroll) {
-          this.setState({ isHorizontalScroll: false });
+        else if(totalHeight < mainHeight && this.state.isVerticalScroll) {
+          //&& this.state.isHorizontalScroll) {
+          //this.setState({ isHorizontalScroll: false });
+          this.setState({ isVerticalScroll: false });
         }
       }
     }
@@ -556,7 +584,7 @@ class ListComponent extends Component {
       var titleWidth; // = title$.width() + 6;
       var titleHeight; // = title$.height();
       var titlePos; // = title$.offset();
-      if(title) {
+      if(title && !this.props.options.hideLabel) {
         titleWidth = title$.width() + 6;
         titleHeight = title$.height();
         titlePos = title$.offset();
@@ -634,7 +662,8 @@ class ListComponent extends Component {
 
       if(this.state.isChanging
       && (this.state.changeType == CHANGE_INIT || this.state.changeType == CHANGE_POPUP))
-        this.setState({ isChanging : false, changeType: null });
+        this.commitChanges();
+        //this.setState({ isChanging: false, changeType: null });
     }
 
     // e, dummy, data
@@ -654,7 +683,12 @@ class ListComponent extends Component {
       if(typeof value === "number" && !isNaN(value)) {
         e.preventDefault();
         e.stopPropagation();
-        this.makeSelection(value, text);
+        try {
+          if(this.props.options.alwaysOneSelected)
+            this.popupService.removePopupIfExists();
+        } finally {
+          this.makeSelection(value, text);
+        }
       }
 
       return true;
@@ -663,25 +697,34 @@ class ListComponent extends Component {
     selectValues({ selectFirst, selectVariable } = {false, false}){
       //const qSelf = this.props.options.self;
       const isLockSelection = this.props.options.lockSelection;
-      const field = this.props.options.field;
+      // const field = this.props.options.field;
+      const { selectValues, lockField, unlockField } = this.props.options;
       const variableAPI = this.props.options.variableAPI;
       const variable = this.props.options.variable;
 
-      // const app = Qlik.currApp();
-      // const field = app.field(fieldName);
-      if(field) {
+      //if(field) {
         let toSelect = selectFirst ? [0] : values(this.state.qSelected);
         if(selectFirst && !selectVariable)
           this.state.qLastSelected = 0;
 
+        let result;
         if(isLockSelection)
-            field.unlock();
+          result = unlockField();
+            //field.unlock();
+
+        const callToSelect = (values) => result ? result.then(() => selectValues(0, values, false)) : selectValues(0, values, false);
 
         //qSelf.backendApi.selectValues(0, toSelect, false);
         if(!selectVariable) {
-          field.select(toSelect, false, false).then(() => {
+          // field.select(toSelect, false, false)
+          // Field API had a bug. SelectValues doesn't work after reload in another window
+          //let callToSelect = result ? result.then(() => selectValues(0, toSelect, false)) : selectValues(0, toSelect, false);
+          //selectValues(0, toSelect, false)
+          callToSelect(toSelect)
+          .then(() => {
             if(isLockSelection)
-              field.lock();
+              lockField();
+              //field.lock();
           });
           // store values into specified variable
           if(variable && variableAPI) {
@@ -693,12 +736,16 @@ class ListComponent extends Component {
             let variableValue = (reply.qContent && reply.qContent.qString)
               || this.state.qLastSelectedText;
 
-            field.selectValues([variableValue], false, false).then(() => {
+            //selectValues([variableValue], false, false)
+            //selectValues(0, [variableValue], false)
+            callToSelect([variableValue])
+            .then(() => {
               if(isLockSelection)
-                field.lock();
+                lockField()
+                //field.lock();
             });
           });
-      }
+      //}
     }
 
     selectedValuesCount(){

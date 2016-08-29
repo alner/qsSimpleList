@@ -12,25 +12,58 @@ export default function setupPaint({ Qlik }) {
         const fieldName = layout.qListObject.qDimensionInfo.qGroupFieldDefs[layout.qListObject.qDimensionInfo.qGroupPos].replace(/^=/, '');
         const variableName = layout.variable;
         const app = Qlik.currApp();
-        const field = app.field(fieldName);
+        // Field API has a bug. It is stop working after reload in another window.
+        // field.field.session.rpc
+        //const field = app.field(fieldName);
+        const lockField = function () {
+          return app.global.session.rpc({
+            "handle": app.model.handle,
+            "method": "GetField",
+            "params": {
+              "qFieldName": fieldName,
+              "qStateName": ""
+            }}).then((data) => {
+              if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
+                app.global.session.rpc({
+                  "handle": data.result.qReturn.qHandle,
+                  "method": "Lock",
+                  "params": {},
+                })
+              })
+        }
+        const unlockField = function() {
+          return app.global.session.rpc({
+            "handle": app.model.handle,
+            "method": "GetField",
+            "params": {
+              "qFieldName": fieldName,
+              "qStateName": ""
+            }}).then((data) => {
+              if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
+                app.global.session.rpc({
+                  "handle": data.result.qReturn.qHandle,
+                  "method": "Unlock",
+                  "params": {},
+                })
+            })
+        }
+        const selectValues = this.backendApi.selectValues.bind(this.backendApi);
         const variableAPI = app.variable;
         const alwaysOneSelected = layout.alwaysOneSelected || (layout.renderAs === 'select');
         const selectionColor = 'rgb(70, 198, 70)';
         let options = {
           ...layout,
-          // self,
           label,
           data,
-          field,
+          app,
+          //field,
+          selectValues,
+          lockField,
+          unlockField,
           variableAPI,
           variableName,
           selectionColor,
           alwaysOneSelected,
-          // renderAs,
-          // itemsLayout,
-          // lockSelection,
-          // hideExcluded,
-          // transparentStyle
         };
 
         render(<ListComponent options={options}/>, element, element.lastChild);
