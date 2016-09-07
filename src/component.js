@@ -1,6 +1,6 @@
 import loadCSS from './loadcss';
 import initialProperties from './initialProperties';
-import definition from './definition';
+import setupDefinition from './definition';
 import setupPaint from './paint';
 
 const global = window;
@@ -30,6 +30,31 @@ define(dependencies,
       || '/extensions/qsSimpleList';
     loadCSS(`${ROOT_URI}/styles.css`);
 
+    const definition = setupDefinition({
+      setAlwaysOneSelectedValue(fieldName, isAlwaysOneSelected) {
+        const app = Qlik.currApp();
+        app.global.session.rpc({
+          "method": "GetField",
+          "handle": app.model.handle,
+          "params": [`${fieldName}`]
+        }).then(function (response) {
+          if(response.result && response.result.qReturn &&
+            response.result.qReturn.qType === "Field") {
+              let qHandle = response.result.qReturn.qHandle;
+              console.log(qHandle);
+              app.global.session.rpc({
+                "handle": qHandle,
+                "method": "SetNxProperties",
+                "params": {
+                  "qProperties": {
+                    "qOneAndOnlyOne": isAlwaysOneSelected
+                  }
+                }
+              })
+          }//if
+        })
+      }
+    });
     const {paint, destroy} = setupPaint({ Qlik });
 
     return {
