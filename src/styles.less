@@ -37,11 +37,11 @@
     position: relative;
     float: left;
     text-overflow: ellipsis;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 13px;
+    //font-weight: bold;
     color: #808080;
     vertical-align: middle;
-    padding: 2px;
+    //padding: 2px;
   }
 
   .btn-expand {
@@ -132,4 +132,77 @@
     text-overflow: ellipsis;
     width: 90%;
   }
+
+  @media (min-height: 481px) and (max-height: 525px) {
+    .lui-button {
+      height: 20px !important;
+    }
+
+    .lui-select {
+      height: 20px !important;
+    }
+
+    .lui-checkbox {
+      height: 16px !important;
+    }
+
+    .lui-checkbox__check {
+      width: 16px !important;
+      height: 16px !important;
+    }
+
+    .lui-checkbox__input {
+      height: 16px !important;
+    }
+
+    .lui-switch {
+      height: 20px !important;
+      padding-top: 3px;
+    }
+
+    .lui-switch__switch {
+      border-radius: 10px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  @media (min-height: 526px) and (max-height: 768px) {
+    .lui-button {
+      height: 24px !important;
+    }
+
+    .lui-select {
+      height: 24px !important;
+    }
+
+    .lui-checkbox {
+      height: 16px !important;
+    }
+
+    .lui-checkbox__check {
+      width: 16px !important;
+      height: 16px !important;
+    }
+
+    .lui-checkbox__input {
+      height: 16px !important;
+    }
+
+    .lui-switch {
+      height: 20px !important;
+      padding-top: 3px;
+    }
+
+    .lui-switch__switch {
+      border-radius: 10px !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+  }
+}
+
+.qv-object-qsSimpleList .qv-inner-object header.qv-object-header.thin {
+  height: 0px !important;
+  padding: 0px !important;
 }

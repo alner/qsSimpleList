@@ -41,7 +41,6 @@ define(dependencies,
           if(response.result && response.result.qReturn &&
             response.result.qReturn.qType === "Field") {
               let qHandle = response.result.qReturn.qHandle;
-              console.log(qHandle);
               app.global.session.rpc({
                 "handle": qHandle,
                 "method": "SetNxProperties",

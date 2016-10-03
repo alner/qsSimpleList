@@ -67,6 +67,11 @@ export default function setupPaint({ Qlik }) {
         };
 
         render(<ListComponent options={options}/>, element, element.lastChild);
+
+        // Remove zoom-in button:
+        const $parent = $element.parents('.qv-object-qsSimpleList');
+        const $zoomIn = $parent && $parent.find('[tid=nav-menu-zoom-in]');
+        if($zoomIn) $zoomIn.remove();
       }
     },
 
