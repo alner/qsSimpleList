@@ -21,7 +21,7 @@ export default {
      },
 
     qInitialDataFetch : [{
-        qWidth : 1,
+        qWidth : 2,
         qHeight : 1000
     }],
   },

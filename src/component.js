@@ -54,12 +54,13 @@ define(dependencies,
         })
       }
     });
-    const {paint, destroy} = setupPaint({ Qlik });
+    const {paint, resize, destroy} = setupPaint({ Qlik });
 
     return {
       initialProperties,
       definition,
       paint,
+      resize,
       destroy,
       snapshot: {
         canTakeSnapshot : false

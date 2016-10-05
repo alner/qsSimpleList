@@ -23,8 +23,10 @@ const CHANGE_INIT = 'init';
 const CHANGE_HORIZONTAL_SCROLL = 'horizontalScroll';
 const CHANGE_VERTICAL_SCROLL = 'verticalScroll';
 const CHANGE_POPUP = 'popup';
+const CHANGE_SIZE = 'size';
 
-const WIDTH_SWITCH_TO_COMPACT = 100; // switch to compact mode if the width is less then the value
+const WIDTH_SWITCH_TO_COMPACT = 80; // switch to compact mode if the width is less then the value
+const MIN_BUTTON_WIDTH = 44;
 
 function filterExcluded(hideExcluded, row) {
   const field = row[0];
@@ -63,11 +65,14 @@ class ListComponent extends Component {
     }
 
     componentDidMount() {
-      this.recalcSize();
+      setTimeout(() => {
+        this.recalcSize();
+      }, 500);
     }
 
     componentDidUpdate(){
-      this.recalcSize();
+      if(this.props.options.isResize)
+        this.recalcSize();
     }
 
     componentWillUnmount(){
@@ -79,7 +84,8 @@ class ListComponent extends Component {
         selectionColor,
         transparentStyle,
         itemsLayout,
-        showState
+        showState,
+        expValuesInsteadOfField,
       } = this.props.options;
       const renderAs = this.state.renderAs || this.props.options.renderAs;
 
@@ -88,6 +94,7 @@ class ListComponent extends Component {
       //let selectedCount = 0;
       let components = items.map(function (row) {
         let field = row[0];
+        let expression = row[1];
         let isSelected = field.qState === 'S' || field.qState === 'L';
 
         if(isSelected && onItemSelectedCallback) {
@@ -100,7 +107,7 @@ class ListComponent extends Component {
           key={field.qElemNumber}
           data={field.qElemNumber}
           width={itemWidth}
-          text={field.qText}
+          text={expValuesInsteadOfField ? expression.qText : field.qText}
           state={field.qState}
           isSelected={isSelected}
           renderAs={renderAs}
@@ -274,7 +281,8 @@ class ListComponent extends Component {
               className={`lui-fade-button qui-button btn-expand ${isPopupHiddenInCompactMode ? 'lui-button--compactmode' : ''} ${selectedCount > 0 ? 'lui-button--hasselections' : ''}`}
               title={`${this.props.options.label}: ${selectedText.join(', ')}`}
               onClick={ expandClickHandler }
-              onTouchStart={ expandClickHandler }>
+              onTouchStart={ expandClickHandler }
+              >
             {!this.popupService.isPopupShow() ?
               <span className="lui-icon lui-button__icon lui-icon--menu"></span>
               :
@@ -420,8 +428,9 @@ class ListComponent extends Component {
           containerHeightValue: containerHeight,
           wasGrow,
           windowWidth: window.innerWidth,
-          windowHeight: window.innerHeight
-          //isChanging: true
+          windowHeight: window.innerHeight,
+          isChanging: true,
+          changeType: CHANGE_SIZE,
           //hideLabel: (!titlePos || (titlePos.top < containerPos.top && ) ? true : false)
         });
 
@@ -457,7 +466,7 @@ class ListComponent extends Component {
           });
         } else
         if(this.state.isCompactMode) {
-          if(containerWidth > WIDTH_SWITCH_TO_COMPACT && this.state.wasGrow) {
+          if(containerWidth > WIDTH_SWITCH_TO_COMPACT) { //? && this.state.wasGrow) {
               this.setState({
                 //isChanging: true,
                 isCompactMode: false,
@@ -471,20 +480,32 @@ class ListComponent extends Component {
           && !this.props.options.compactMode
           && this.props.options.itemsLayout === 'h'
           && this.props.options.alwaysOneSelected) {
-            if(totalHeight > mainHeight && !this.state.renderAs) {
-              if(!this.state.isChanging) {
-                this.setState({ isChanging: true, changeType: CHANGE_RENDER });
-              } else
-              if(this.state.renderAs != SELECT_RENDER)
-                this.setState({ renderAs: SELECT_RENDER, hideLabel: false, itemWidthValue: undefined, isItemWidthGrow: false });
-              else
-                this.commitChanges();
-                //this.setState({ isChanging: false, changeType: undefined });
+            if(!this.state.renderAs &&
+              (totalHeight > mainHeight || this.state.itemWidthValue <= MIN_BUTTON_WIDTH)) {
+                  if(!this.state.isChanging) {
+                    this.setState({ isChanging: true, changeType: CHANGE_RENDER });
+                  } else
+                  if(this.state.renderAs != SELECT_RENDER)
+                    this.setState({
+                      renderAs: SELECT_RENDER,
+                      switchBackWidthValue: mainWidth,
+                      hideLabel: false,
+                      itemWidthValue: undefined,
+                      isItemWidthGrow: false });
+                  else
+                    this.commitChanges();
+                    //this.setState({ isChanging: false, changeType: undefined });
             } else
             if(this.state.renderAs && !this.state.isChanging) {
-              if(totalHeight <= mainHeight && this.state.isItemWidthGrow) {
-                // try to restore original...
-                this.setState({ renderAs: null, isItemWidthGrow: false, isChanging: true, changeType: CHANGE_RENDER })
+              if(mainWidth > this.state.switchBackWidthValue
+                || (totalHeight <= mainHeight && this.state.isItemWidthGrow)) {
+                  // try to restore original...
+                  this.setState({
+                    renderAs: null,
+                    switchBackWidthValue: null,
+                    isItemWidthGrow: false,
+                    isChanging: true,
+                    changeType: CHANGE_RENDER })
               }
             } else if(this.state.isChanging) {
               this.commitChanges();
@@ -505,7 +526,8 @@ class ListComponent extends Component {
       containerWidth, containerHeight, containerPos,
       titleWidth, titleHeight, titlePos})
     {
-      if(this.state.isChanging)
+      if(this.state.isChanging
+      && this.state.changeType !== CHANGE_INIT)
           // && (this.state.changeType !== CHANGE_HORIZONTAL_SCROLL
           // && this.state.changeType !== CHANGE_VERTICAL_SCROLL))
         return;
@@ -630,9 +652,9 @@ class ListComponent extends Component {
             //   });
         } else {
             if(itemCount > 0) {
-              var hideLabel = undefined;
-              if(titlePos && containerPos)
-                  hideLabel = titlePos.top < containerPos.top ? true : false;
+              //var hideLabel = undefined;
+              //if(titlePos && containerPos)
+              //    hideLabel = titlePos.top < containerPos.top ? true : false;
 
               var itemWidthValue = Math.floor((mainWidth - titleWidth) / itemCount - 6); //
               var itemWidth = `${Math.floor(itemWidthValue)}px`; // - 6
@@ -661,9 +683,10 @@ class ListComponent extends Component {
         titleWidth, titleHeight, titlePos });
 
       if(this.state.isChanging
-      && (this.state.changeType == CHANGE_INIT || this.state.changeType == CHANGE_POPUP))
+      && (this.state.changeType == CHANGE_INIT
+       || this.state.changeType == CHANGE_POPUP
+       || this.state.changeType == CHANGE_SIZE))
         this.commitChanges();
-        //this.setState({ isChanging: false, changeType: null });
     }
 
     // e, dummy, data

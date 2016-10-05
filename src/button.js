@@ -17,7 +17,7 @@ export default class ButtonComponent extends Component {
       if(this.props.transparentStyle)
         //className = (this.props.isSelected ? "lui-button--success qui-button-selected"  : "lui-button qui-button transarent-button");
         //className = "lui-button qui-button transarent-button";
-        classNames.push('transarent-button');
+        classNames.push('transparent-button');
       else
         //className = "lui-button lui-button--toolbar qui-button";
         classNames.push('lui-button--toolbar');
@@ -80,7 +80,7 @@ export class ButtonGroupComponent extends Component {
       position: 'relative',
       //position: isPopup ? 'fixed' : 'relative',
     };
-    if(isChanging || isHidden) {
+    if(isHidden) { // isChanging ||
       style.visibility = 'hidden';
     }
     if(isPopup || isScroll) {

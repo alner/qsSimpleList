@@ -57,6 +57,15 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
           b.qFieldLabels[0] = b.qFieldDefs[0]
         }
       },
+      expression : {
+        type : "string",
+        expression : "optional",
+        //component : "expression",
+        //expressionType : "measure",
+        //expressionType : "dimension",
+        ref : "qListObjectDef.qExpressions.0.qExpr",
+        translation : "Common.Measure",
+      },
       clearDimension : {
         type : "boolean",
         component : RemoveButtonComponent,

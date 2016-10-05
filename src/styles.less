@@ -37,6 +37,17 @@
     position: relative;
     float: left;
     text-overflow: ellipsis;
+    font-size: 16px;
+    font-weight: bold;
+    color: #808080;
+    vertical-align: middle;
+    padding: 2px;
+  }
+
+  .switch-title {
+    position: relative;
+    float: left;
+    text-overflow: ellipsis;
     font-size: 13px;
     //font-weight: bold;
     color: #808080;
@@ -67,7 +78,7 @@
     border-color: rgba(0, 0, 0, 0.1);
   }
 
-  .transarent-button {
+  .transparent-button {
     background-color: transparent;
     background-image: none;
     border-color: rgba(0, 0, 0, 0.1);
@@ -104,6 +115,12 @@
   .lui-button--success.lui-focused {
     //padding: 0 16px;
     //border: 1px solid #52a2cc;
+    box-shadow: none !important;
+  }
+
+
+  .lui-button:focus, .lui-button.lui-focused {
+    border: 1px solid rgba(0, 0, 0, 0.1) !important; 
     box-shadow: none !important;
   }
 
@@ -205,4 +222,13 @@
 .qv-object-qsSimpleList .qv-inner-object header.qv-object-header.thin {
   height: 0px !important;
   padding: 0px !important;
+}
+
+.qv-object-qsSimpleList .qv-inner-object {
+    padding: 0px !important;
+    background: none !important;
+}
+
+.qv-object-qsSimpleList {
+  border: none !important;
 }

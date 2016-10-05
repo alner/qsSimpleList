@@ -77,7 +77,7 @@ export default class SenseCheckBoxComponent extends Component {
                 </span>
               </label>
             </div>
-            <div className="title" style={labelStyle}>{text}</div>
+            <div className="switch-title" style={labelStyle}>{text}</div>
           </div>
           );
       } else { // sensecheckbox
