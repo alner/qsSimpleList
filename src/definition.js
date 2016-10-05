@@ -59,9 +59,9 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
       },
       expression : {
         type : "string",
-        expression : "optional",
-        //component : "expression",
-        //expressionType : "measure",
+        //expression : "always",
+        component : "expression",
+        expressionType : "measure",
         //expressionType : "dimension",
         ref : "qListObjectDef.qExpressions.0.qExpr",
         translation : "Common.Measure",
