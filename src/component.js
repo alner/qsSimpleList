@@ -24,11 +24,11 @@ let dependencies = [
   else return 'resource-not-defined'
 });
 
-define(dependencies,
+define(dependencies.concat("css!./styles.css"),
   function(module, Qlik){
-    const ROOT_URI = module.uri.split('/').slice(0, -1).join('/')
-      || '/extensions/qsSimpleList';
-    loadCSS(`${ROOT_URI}/styles.css`);
+    // const ROOT_URI = module.uri.split('/').slice(0, -1).join('/')
+    //   || '/extensions/qsSimpleList';
+    // loadCSS(`${ROOT_URI}/styles.css`);
 
     const definition = setupDefinition({
       setAlwaysOneSelectedValue(fieldName, isAlwaysOneSelected) {
