@@ -38,6 +38,9 @@ export default class ButtonComponent extends Component {
         case 'A':
           classNames.push('alternative');
           break;
+        //default:
+          //classNames.push('normal');
+          //break;
       }
 
       let itemStyle = {};

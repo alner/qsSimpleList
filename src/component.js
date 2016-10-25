@@ -1,4 +1,4 @@
-import loadCSS from './loadcss';
+//import loadCSS from './loadcss';
 import initialProperties from './initialProperties';
 import setupDefinition from './definition';
 import setupPaint from './paint';
