@@ -365,6 +365,15 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
               return !(data.renderAs === 'select');
             }
           },
+          toggleMode: {
+            type: "boolean",
+            label: "Toggle mode",
+            ref: "toggleMode",
+            defaultValue: false,
+            show: function(data){
+              return !(data.renderAs === 'select');
+            }
+          },
           /*
           itemsLayout: {
             type: "string",

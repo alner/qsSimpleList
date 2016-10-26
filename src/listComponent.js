@@ -1,8 +1,8 @@
 //import React from 'react';
 import {h, Component, render, cloneElement} from 'preact';
 //import Qlik from 'js/qlik';
-import isEqual from 'lodash.isEqual';
-import values from 'lodash.values';
+//import isEqual from 'lodash.isEqual';
+//import values from 'lodash.values';
 import Renderers from './renderers';
 import ButtonComponent from './button';
 //import CheckBoxComponent from './checkbox';
@@ -28,6 +28,7 @@ const CHANGE_SIZE = 'size';
 
 const WIDTH_SWITCH_TO_COMPACT = 80; // switch to compact mode if the width is less then the value
 const MIN_BUTTON_WIDTH = 44;
+const MAX_ITEMS_IN_TOOLTIP = 64;
 
 function filterExcluded(hideExcluded, row) {
   const field = row[0];
@@ -41,7 +42,7 @@ class ListComponent extends Component {
     constructor(props) {
       super(props);
       this.state = {
-        qSelected: {},
+        //qSelected: {},
         qLastSelected: -1,
         qLastSelectedText: '',
         //qLastField: '',
@@ -156,13 +157,13 @@ class ListComponent extends Component {
         let isPopupShowInCompactMode = compactMode && this.popupService.isPopupShow();
 
         let selectedCount = 0;
-        let selection = {};
+        //let selection = {};
         let selectedText = [];
         let components = this.itemsToDraw(items,
           // selections callback
           (field) => {
             ++selectedCount;
-            selection[field.qElemNumber] = field.qElemNumber;
+            //selection[field.qElemNumber] = field.qElemNumber;
 
             if(this.state.qLastSelected !== field.qElemNumber)
               this.state.qLastSelected = field.qElemNumber;
@@ -170,12 +171,16 @@ class ListComponent extends Component {
             if(this.state.qLastSelectedText !== field.qText)
               this.state.qLastSelectedText = field.qText;
 
-            selectedText.push(field.qText);
+            if(selectedCount < MAX_ITEMS_IN_TOOLTIP)
+              selectedText.push(field.qText);
           }
         );
 
-        if(!isEqual(this.state.qSelected, selection))
-          this.state.qSelected = selection;
+        if(selectedCount > MAX_ITEMS_IN_TOOLTIP)
+          selectedText.push("...");
+
+        // if(!isEqual(this.state.qSelected, selection))
+        //   this.state.qSelected = selection;
 
         if(this.isAlwaysOneSelected() && items.length > 0
         && (selectedCount > 1 || selectedCount == 0)) {
@@ -184,7 +189,7 @@ class ListComponent extends Component {
             this.state.qLastSelectedText = items[0][0].qText; // to set variable value
           // select first one if more then one selection exists
           this.selectValues({
-            selectFirst: selectedCount == 0 || this.selectedValuesCount() > 1,
+            selectFirst: selectedCount == 0 || selectedCount > 1, //this.selectedValuesCount() > 1,
             selectVariable
           });
         }
@@ -210,7 +215,8 @@ class ListComponent extends Component {
             <Container ref={(c) => this._container = c }
               //{...self.props.options}
               changeHandler={this.clickHandler.bind(this)}
-              selectedValues={this.getSelectedValues()}
+              //selectedValues={this.getSelectedValues()}
+              lastSelectedValue={this.state.qLastSelected}
               itemWidth={itemWidth}
               containerWidth={this.state.containerWidth}
               titleWidth={this.state.titleWidth}
@@ -718,7 +724,8 @@ class ListComponent extends Component {
         e.preventDefault();
         e.stopPropagation();
         try {
-          if(this.props.options.alwaysOneSelected)
+          if(this.props.options.alwaysOneSelected
+          || this.props.options.toggleMode)
             this.popupService.removePopupIfExists();
         } finally {
           this.makeSelection(value, text);
@@ -728,93 +735,101 @@ class ListComponent extends Component {
       return true;
     }
 
-    selectValues({ selectFirst, selectVariable } = {false, false}){
+    selectValues({selectFirst, selectVariable, isToggle, values } = {false, false, false, null}){
       //const qSelf = this.props.options.self;
       const isLockSelection = this.props.options.lockSelection;
       // const field = this.props.options.field;
-      const { selectValues, lockField, unlockField } = this.props.options;
+      const { selectValues, lockField, unlockField, toggleMode } = this.props.options;
       const variableAPI = this.props.options.variableAPI;
       const variable = this.props.options.variable;
+      let qToggleMode = !toggleMode;
+      if(!toggleMode)
+        qToggleMode = isToggle || false;
 
       //if(field) {
-        let toSelect = selectFirst ? [0] : values(this.state.qSelected);
-        if(selectFirst && !selectVariable)
-          this.state.qLastSelected = 0;
+      let toSelect = selectFirst ? [0] : values; //values(this.state.qSelected);
+      if(selectFirst && !selectVariable)
+        this.state.qLastSelected = 0;
 
-        let result;
-        if(isLockSelection)
-          result = unlockField();
-            //field.unlock();
+      let futureResult;
+      if(isLockSelection)
+        futureResult = unlockField();
+          //field.unlock();
 
-        const callToSelect = (values) => result ? result.then(() => selectValues(0, values, false)) : selectValues(0, values, false);
+      const callToSelect = (values) => futureResult ? futureResult.then(() => selectValues(0, values, qToggleMode)) : selectValues(0, values, qToggleMode);
 
-        //qSelf.backendApi.selectValues(0, toSelect, false);
-        if(!selectVariable) {
-          // field.select(toSelect, false, false)
-          // Field API had a bug. SelectValues doesn't work after reload in another window
-          //let callToSelect = result ? result.then(() => selectValues(0, toSelect, false)) : selectValues(0, toSelect, false);
-          //selectValues(0, toSelect, false)
-          callToSelect(toSelect)
+      //qSelf.backendApi.selectValues(0, toSelect, false);
+      if(!selectVariable) {
+        // field.select(toSelect, false, false)
+        // Field API had a bug. SelectValues doesn't work after reload in another window
+        //let callToSelect = result ? result.then(() => selectValues(0, toSelect, false)) : selectValues(0, toSelect, false);
+        //selectValues(0, toSelect, false)
+        callToSelect(toSelect)
+        .then(() => {
+          if(isLockSelection)
+            lockField();
+            //field.lock();
+        });
+        // store values into specified variable
+        if(variable && variableAPI) {
+          variableAPI.setStringValue(variable, this.state.qLastSelectedText);
+        }
+      } else
+      if(variable && variableAPI)
+        variableAPI.getContent(variable, (reply) => {
+          let variableValue = (reply.qContent && reply.qContent.qString)
+            || this.state.qLastSelectedText;
+
+          //selectValues([variableValue], false, false)
+          //selectValues(0, [variableValue], false)
+          callToSelect([variableValue])
           .then(() => {
             if(isLockSelection)
-              lockField();
+              lockField()
               //field.lock();
           });
-          // store values into specified variable
-          if(variable && variableAPI) {
-            variableAPI.setStringValue(variable, this.state.qLastSelectedText);
-          }
-        } else
-        if(variable && variableAPI)
-          variableAPI.getContent(variable, (reply) => {
-            let variableValue = (reply.qContent && reply.qContent.qString)
-              || this.state.qLastSelectedText;
-
-            //selectValues([variableValue], false, false)
-            //selectValues(0, [variableValue], false)
-            callToSelect([variableValue])
-            .then(() => {
-              if(isLockSelection)
-                lockField()
-                //field.lock();
-            });
-          });
+        });
       //}
     }
 
-    selectedValuesCount(){
-      return values(this.state.qSelected).length;
-    }
+    // selectedValuesCount(){
+    //   return values(this.state.qSelected).length;
+    // }
 
-    getSelectedValues(){
-      return values(this.state.qSelected);
-    }
+    // getSelectedValues(){
+    //   return values(this.state.qSelected);
+    // }
 
     makeSelection(value, text){
       var self = this;
-      var selected = self.state.qSelected;
-      var lastSelected = self.state.qLastSelected;
+      //var selected = self.state.qSelected;
+      //var lastSelected = self.state.qLastSelected;
+      // if(self.props.options.alwaysOneSelected) {
+      //   selected = {};
+      // }
+      // else {
+      //   lastSelected = -1;
+      // }
 
-      if(self.props.options.alwaysOneSelected) {
-        selected = {};
-      }
-      else {
-        lastSelected = -1;
-      }
+      // if(typeof value === "number" && !isNaN(value) && selected[value] !== value)
+      //     selected[value] = value;
+      // else
+      //     delete selected[value];
 
-      if(typeof value === "number" && !isNaN(value) && selected[value] !== value)
-          selected[value] = value;
-      else
-          delete selected[value];
+      //self.state.qSelected = selected;
 
-      self.state.qSelected = selected;
-      self.state.qLastSelectedText = text;
+      const isAlwaysOneSelected = self.props.options.alwaysOneSelected;
+      if(!(isAlwaysOneSelected && self.state.qLastSelected == value))
+        self.selectValues({
+          values:[value],
+          isToggle: !isAlwaysOneSelected // If true, values in the field are selected in addition to any previously selected items.
+        });
 
-      if(self.props.options.alwaysOneSelected)
+      if(isAlwaysOneSelected)
         self.state.qLastSelected = value;
 
-      if(!(self.props.options.alwaysOneSelected && lastSelected == value))
-        self.selectValues();
+      self.state.qLastSelectedText = text;
+
 
       //qSelf.selectValues(dim, [value], true);
     }

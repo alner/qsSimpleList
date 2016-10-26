@@ -20,8 +20,9 @@ export default class SelectComponent extends Component {
       }
 
       let selectedValue = "";
-      if(this.props.selectedValues.length > 0)
-        selectedValue = this.props.selectedValues[0];
+      //if(this.props.selectedValues.length > 0)
+      if(!isNaN(this.props.lastSelectedValue))
+        selectedValue = this.props.lastSelectedValue; //this.props.selectedValues[0];
 
       if(width) style.width = width;
 
