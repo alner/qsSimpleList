@@ -82,20 +82,17 @@ export default class SenseCheckBoxComponent extends Component {
           );
       } else { // sensecheckbox
         // Checkbox
-        /*
-        <div className={"qui-checkboxicon"} style={itemStyle}>
-              <input type="checkbox" checked={isSelected} />
-              <div className={"check-wrap"}>
-                <span data-value={data} className={"check"} style={checkStyle}/>
-                <span data-value={data} className={"check-text label"}>{text}</span>
-              </div>
-            </div>
-        */
+        let selectableClasses = ['lui-checkbox__check', 'check'];
+        if(isSelected)
+          selectableClasses.push('selected');
+        else
+          selectableClasses.push('selectable')
+
         return (
           <label className="lui-checkbox qui-checkbox" style={itemStyle}>
             <input className="lui-checkbox__input" type="checkbox" checked={isSelected} />
             <div className="lui-checkbox__check-wrap check-wrap">
-              <span data-value={data} data-text={text} className="lui-checkbox__check check" style={checkStyle}></span>
+              <span data-value={data} data-text={text} className={selectableClasses.join(' ')} style={checkStyle}></span>
               <span data-value={data} data-text={text} className="lui-checkbox__check-text check-text">{text}</span>
             </div>
           </label>);

@@ -12,7 +12,7 @@ export default class ButtonComponent extends Component {
 
       //var renderAs = this.props.renderAs;
       let itemsLayout = this.props.itemsLayout;
-      let classNames = ['lui-button', 'qui-button'];
+      let classNames = ['lui-button', 'qui-button', 'selectable'];
       //let className;
       if(this.props.transparentStyle)
         //className = (this.props.isSelected ? "lui-button--success qui-button-selected"  : "lui-button qui-button transarent-button");
@@ -39,14 +39,14 @@ export default class ButtonComponent extends Component {
           classNames.push('alternative');
           break;
         //default:
-          //classNames.push('normal');
           //break;
       }
 
       let itemStyle = {};
       if(this.props.isSelected) {
         //className = "lui-button lui-button--success qui-button"; // qirby-button
-        classNames.push('lui-button--success');
+        //classNames.push('lui-button--success');
+        classNames.push('selected');
         itemStyle.backgroundImage = "none";
         itemStyle.backgroundColor = this.props.selectionColor;
         //itemStyle.borderColor = this.props.selectionColor;
@@ -101,14 +101,28 @@ export class ButtonGroupComponent extends Component {
             clearTimeout(this._tid);
           props.changeHandler && props.changeHandler(e);
         }}
+        onMouseMove={(e) => {
+          props.changeSelection(e);
+        }}
+        onMouseUp={(e)=>{
+          props.finishSelection(e);
+        }}
+        onMouseLeave={(e)=>{
+          props.finishSelection(e);
+        }}
         onTouchStart={(e) => {
           this._tid = setTimeout(() => {
             props.changeHandler && props.changeHandler(e);
           }, 250);
         }}
-        onTouchMove={()=>{
+        onTouchMove={(e)=>{
+          e.preventDefault();
+          props.changeSelection(e);
           if(this._tid)
             clearTimeout(this._tid);
+        }}
+        onTouchEnd={(e)=>{
+          props.finishSelection(e);
         }}
         >
         {props.children}

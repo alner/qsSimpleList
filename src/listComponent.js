@@ -43,6 +43,8 @@ class ListComponent extends Component {
       super(props);
       this.state = {
         //qSelected: {},
+        isSelectionStarted: false,
+        currentSelections: [],
         qLastSelected: -1,
         qLastSelectedText: '',
         //qLastField: '',
@@ -214,7 +216,9 @@ class ListComponent extends Component {
           containerComponent = (
             <Container ref={(c) => this._container = c }
               //{...self.props.options}
-              changeHandler={this.clickHandler.bind(this)}
+              changeHandler={this.selectionHandler.bind(this)}
+              changeSelection={this.changeSelection.bind(this)}
+              finishSelection={this.finishSelection.bind(this)}
               //selectedValues={this.getSelectedValues()}
               lastSelectedValue={this.state.qLastSelected}
               itemWidth={itemWidth}
@@ -233,24 +237,38 @@ class ListComponent extends Component {
         // const paddingLeft = isPopup || isScroll ? "47px" : "0"
           containerComponent = (
             <form ref={(c) => this._container = c }
-                //onClick={this.clickHandler.bind(this)}
-                //onTouchStart={this.clickHandler.bind(this)}
+                //onClick={this.selectionHandler.bind(this)}
+                //onTouchStart={this.selectionHandler.bind(this)}
                 onClick={(e) => {
                   if(this._tid)
                     clearTimeout(this._tid);
 
-                  this.clickHandler(e);
+                  this.selectionHandler(e);
+                }}
+                onMouseMove={(e) => {
+                  this.changeSelection(e);
+                }}
+                onMouseUp={(e)=>{
+                  this.finishSelection(e);
+                }}
+                onMouseLeave={(e)=>{
+                  this.finishSelection(e);
                 }}
                 onTouchStart={(e) => {
                   this._tid = setTimeout(() => {
-                    this.clickHandler(e);
+                    this.selectionHandler(e);
                   }, 250);
                 }}
-                onTouchMove={()=>{
+                onTouchMove={(e)=>{
+                  e.preventDefault();
+                  this.changeSelection(e);
                   if(this._tid) {
                     clearTimeout(this._tid);
                     this._tid = null;
                   }
+                }}
+                onTouchEnd={(e)=>{
+                  props.finishSelection(e);
                 }}
                 style={{
                   paddingLeft: isScrollOrPopup ? "47px" : "0px",
@@ -706,8 +724,43 @@ class ListComponent extends Component {
         this.commitChanges();
     }
 
+    changeSelection(e) {
+      let isSelectionStarted = this.state.isSelectionStarted;
+      if(!isSelectionStarted) {
+        if(e.buttons !== 0 || (e.touches && e.touches.length)) {
+          isSelectionStarted = true;
+          this.setState({isSelectionStarted, currentSelections:[] });
+        }
+      }
+
+      if(isSelectionStarted) {
+        let target;
+        if(e.touches && e.touches.length)
+          target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+        else
+          target = e.target;
+
+        if(target.classList
+        && (target.classList.contains('selectable')
+        || target.classList.contains('selected')))
+          this.selectionHandler({
+            target,
+            preventDefault: e.preventDefault.bind(e),
+            stopPropagation: e.stopPropagation.bind(e)}); // do selection
+      }
+    }
+
+    finishSelection(e) {
+      //console.log('finish selection');
+      if(this.state.isSelectionStarted) {
+        console.log(this.state.currentSelections);
+        this.makeSelection({value: this.state.currentSelections});
+        this.setState({isSelectionStarted: false, currentSelections:[]});
+      }
+    }
+
     // e, dummy, data
-    clickHandler(e, data) {
+    selectionHandler(e, data) {
       var value;
       var text;
       if(data) {
@@ -720,6 +773,19 @@ class ListComponent extends Component {
         text = e.target.getAttribute("data-text") || e.target.text;
       }
 
+      if(this.state.currentSelections.indexOf(value) == -1) {
+        //this.state.currentSelections.push(value);
+        if(e.target.classList.contains('selectable')) {
+          e.target.classList.remove('selectable');
+          e.target.classList.add('selected');
+          console.log(e.target);
+        }
+        else if(e.target.classList.contains('selected')) {
+          e.target.classList.remove('selected');
+          e.target.classList.add('selectable');
+        }
+      }
+
       if(typeof value === "number" && !isNaN(value)) {
         e.preventDefault();
         e.stopPropagation();
@@ -728,7 +794,7 @@ class ListComponent extends Component {
           || this.props.options.toggleMode)
             this.popupService.removePopupIfExists();
         } finally {
-          this.makeSelection(value, text);
+          this.makeSelection({value, text, isKeepSelection: this.state.isSelectionStarted});
         }
       }
 
@@ -800,7 +866,7 @@ class ListComponent extends Component {
     //   return values(this.state.qSelected);
     // }
 
-    makeSelection(value, text){
+    makeSelection({value, text, isKeepSelection = false}){
       var self = this;
       //var selected = self.state.qSelected;
       //var lastSelected = self.state.qLastSelected;
@@ -818,17 +884,23 @@ class ListComponent extends Component {
 
       //self.state.qSelected = selected;
 
+      if(isKeepSelection && self.state.currentSelections.indexOf(value) == -1) {
+        // there is no need to repaint
+        self.state.currentSelections.push(value);
+      }
+
       const isAlwaysOneSelected = self.props.options.alwaysOneSelected;
-      if(!(isAlwaysOneSelected && self.state.qLastSelected == value))
+      if(!isKeepSelection && !(isAlwaysOneSelected && self.state.qLastSelected == value))
         self.selectValues({
-          values:[value],
+          values: Array.isArray(value) ? value : [value],
           isToggle: !isAlwaysOneSelected // If true, values in the field are selected in addition to any previously selected items.
         });
 
       if(isAlwaysOneSelected)
         self.state.qLastSelected = value;
 
-      self.state.qLastSelectedText = text;
+      if(text)
+        self.state.qLastSelectedText = text;
 
 
       //qSelf.selectValues(dim, [value], true);

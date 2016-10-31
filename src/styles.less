@@ -1,3 +1,5 @@
+@SELECTED_COLOR: rgba(70, 198, 70, 0.85);
+
 .qv-object-simple-list-main {
   display: block;
   width: 100%;
@@ -92,6 +94,11 @@
     background-color: #ddd;
   }
 
+  .selected {
+    background-color: @SELECTED_COLOR;
+    color: #FFFFFF;
+  }
+
   .normal {
     background-color: white;
   }
@@ -130,6 +137,10 @@
 
   .lui-checkbox {
     display: inline-block;
+  }
+
+  .lui-checkbox__check:active {
+    background: @SELECTED_COLOR !important;
   }
 
   .lui-button--hasselections {
