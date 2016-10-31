@@ -113,15 +113,24 @@ export class ButtonGroupComponent extends Component {
         onTouchStart={(e) => {
           this._tid = setTimeout(() => {
             props.changeHandler && props.changeHandler(e);
+            props.finishSelection(e);
           }, 250);
         }}
         onTouchMove={(e)=>{
           e.preventDefault();
-          props.changeSelection(e);
-          if(this._tid)
+          if(this._tid) {
             clearTimeout(this._tid);
+            this._tid = null;
+          }
+          props.changeSelection(e);
         }}
+        // onTouchCancel={(e)=>{
+        //   console.log('t cancel');
+        //   e.preventDefault();
+        //   props.finishSelection(e);
+        // }}
         onTouchEnd={(e)=>{
+          e.preventDefault();
           props.finishSelection(e);
         }}
         >
