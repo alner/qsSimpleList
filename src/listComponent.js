@@ -12,6 +12,7 @@ import SenseCheckBoxComponent from './senseCheckbox';
 import { BUTTON_RENDER, SELECT_RENDER, CHECKBOX_RENDER,
   SWITCH_RENDER } from './definition';
 import { createPopupService } from './popupService.js';
+import {selectionEvents} from './selectionEvents';
 //import SenseRadioButtonComponent from './senseRadiobutton';
 //"jsx!./multiselect.js"
 
@@ -66,6 +67,11 @@ class ListComponent extends Component {
       this._main = undefined;
       this._container = undefined;
       this.popupService = createPopupService();
+      this.eventsInjector = selectionEvents.bind(this, {
+        changeHandler: this.selectionHandler.bind(this),
+        changeSelection: this.changeSelection.bind(this),
+        finishSelection: this.finishSelection.bind(this)
+      });
     }
 
     componentDidMount() {
@@ -237,8 +243,10 @@ class ListComponent extends Component {
         // const paddingLeft = isPopup || isScroll ? "47px" : "0"
           containerComponent = (
             <form ref={(c) => this._container = c }
+                {...this.eventsInjector()}
                 //onClick={this.selectionHandler.bind(this)}
                 //onTouchStart={this.selectionHandler.bind(this)}
+                /*
                 onClick={(e) => {
                   if(this._tid)
                     clearTimeout(this._tid);
@@ -272,6 +280,7 @@ class ListComponent extends Component {
                   e.preventDefault();
                   this.finishSelection(e);
                 }}
+                */
                 style={{
                   paddingLeft: isScrollOrPopup ? "47px" : "0px",
                   visibility: isPopupHiddenInCompactMode || this.state.isChanging ? 'hidden' : 'visible'

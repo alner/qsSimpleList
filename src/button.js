@@ -1,5 +1,6 @@
 import {h, Component} from 'preact';
 import Renderers from './renderers';
+import {selectionEvents} from './selectionEvents';
 
 export default class ButtonComponent extends Component {
     render() {
@@ -60,6 +61,7 @@ export default class ButtonComponent extends Component {
         <button
           data-value={data}
           data-text={text}
+          draggable="true" // selecion events support
           className={classNames.join(' ')}
           style={itemStyle}
           title={text}>
@@ -70,6 +72,10 @@ export default class ButtonComponent extends Component {
   };
 
 export class ButtonGroupComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.eventsInjector = selectionEvents.bind(this, this.props);
+  }
   render(props) {
     // const width = this.props.containerWidth;
     const { titleWidth, isChanging, isScroll, isPopup, isHidden } = this.props;
@@ -93,47 +99,12 @@ export class ButtonGroupComponent extends Component {
     // if(width) {
     //   style.width = width;
     // }
-
     return (
-      <div class="lui-buttongroup qui-buttongroup" style={style}
-        onClick={(e) => {
-          if(this._tid)
-            clearTimeout(this._tid);
-          props.changeHandler && props.changeHandler(e);
-        }}
-        onMouseMove={(e) => {
-          props.changeSelection(e);
-        }}
-        onMouseUp={(e)=>{
-          props.finishSelection(e);
-        }}
-        onMouseLeave={(e)=>{
-          props.finishSelection(e);
-        }}
-        onTouchStart={(e) => {
-          this._tid = setTimeout(() => {
-            props.changeHandler && props.changeHandler(e);
-            props.finishSelection(e);
-          }, 250);
-        }}
-        onTouchMove={(e)=>{
-          e.preventDefault();
-          if(this._tid) {
-            clearTimeout(this._tid);
-            this._tid = null;
-          }
-          props.changeSelection(e);
-        }}
-        // onTouchCancel={(e)=>{
-        //   console.log('t cancel');
-        //   e.preventDefault();
-        //   props.finishSelection(e);
-        // }}
-        onTouchEnd={(e)=>{
-          e.preventDefault();
-          props.finishSelection(e);
-        }}
-        >
+      <div
+        class="lui-buttongroup qui-buttongroup"
+        style={style}
+        {...this.eventsInjector()}
+      >
         {props.children}
       </div>
     );
