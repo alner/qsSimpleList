@@ -12,67 +12,41 @@ export function selectionEvents(props) {
   return {
     onClick: (e) => {
       self.base.onmousemove = null;
-      clearTimer();
-      //props.finishSelection(e);
+      props.finishSelection(e);
       props.changeHandler && props.changeHandler(e);
     },
 
     onDragStart: (e) => {
       e.preventDefault();
-      //clearTimer();
       //self.base.onmousemove = null;
 
-      //tid = setTimeout(() => {
       props.changeSelection(e);
       self.base.onmousemove = (e) => {
-        // props.changeHandler && props.changeHandler(e);
-        // props.finishSelection(e);
         if(e.buttons > 0) {
           props.changeSelection(e);
         }
       }
-      //}, 100);
     },
 
-    // onMouseDown: (e) => {
-    //   clearTimer();
-    //   //self.base.onmousemove = null;
-    //
-    //   tid = setTimeout(() => {
-    //     isDown = true;
-    //     props.changeSelection(e);
-    //   }, 100);
-    //
-    //   // tid = setTimeout(() => {
-    //   //     props.changeSelection(e);
-    //   //     self.base.onmousemove = (e) => {
-    //   //       // props.changeHandler && props.changeHandler(e);
-    //   //       // props.finishSelection(e);
-    //   //       if(e.buttons > 0) {
-    //   //         props.changeSelection(e);
-    //   //       }
-    //   //     }
-    //   // }, 100);
-    // },
-
-    // onMouseMove: (e) => {
-    //   if(e.buttons > 0) {
-    //     console.log('Move', e);
-    //     props.changeSelection(e);
-    //   }
-    // },
+    onDragEnd: (e) => {
+      self.base.onmousemove = null;
+      //clearTimer();
+      props.finishSelection(e);
+    },
 
     onMouseUp: (e) => {
       self.base.onmousemove = null;
-      clearTimer();
+      //clearTimer();
       props.finishSelection(e);
     },
 
     onMouseLeave: (e) => {
+      self.base.onmousemove = null;
       props.finishSelection(e);
     },
 
     onTouchStart: (e) => {
+      e.preventDefault();
       clearTimer();
       self.base.onmousemove = null;
       tid = setTimeout(() => {
@@ -84,7 +58,6 @@ export function selectionEvents(props) {
     onTouchMove: (e) => {
       e.preventDefault();
       clearTimer();
-
       props.changeSelection(e);
     },
 
@@ -94,3 +67,31 @@ export function selectionEvents(props) {
     }
   }
 }
+
+// onMouseDown: (e) => {
+//   clearTimer();
+//   //self.base.onmousemove = null;
+//
+//   tid = setTimeout(() => {
+//     isDown = true;
+//     props.changeSelection(e);
+//   }, 100);
+//
+//   // tid = setTimeout(() => {
+//   //     props.changeSelection(e);
+//   //     self.base.onmousemove = (e) => {
+//   //       // props.changeHandler && props.changeHandler(e);
+//   //       // props.finishSelection(e);
+//   //       if(e.buttons > 0) {
+//   //         props.changeSelection(e);
+//   //       }
+//   //     }
+//   // }, 100);
+// },
+
+// onMouseMove: (e) => {
+//   if(e.buttons > 0) {
+//     console.log('Move', e);
+//     props.changeSelection(e);
+//   }
+// },
