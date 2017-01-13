@@ -9,6 +9,7 @@ export default function setupPaint({ Qlik }) {
     if(layout.qListObject && layout.qListObject.qDataPages.length > 0) {
       const label = layout.qListObject.qDimensionInfo.qFallbackTitle;
       const data = layout.qListObject.qDataPages[0].qMatrix;
+      const area = layout.qListObject.qDataPages[0].qArea;
       const fieldName = layout.qListObject.qDimensionInfo.qGroupFieldDefs[layout.qListObject.qDimensionInfo.qGroupPos].replace(/^=/, '');
       const variableName = layout.variable;
       const expValuesInsteadOfField = layout.qListObject.qExpressions.length > 0
@@ -57,6 +58,7 @@ export default function setupPaint({ Qlik }) {
         ...layout,
         label,
         data,
+        area,
         app,
         //field,
         selectValues,

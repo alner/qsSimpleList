@@ -30,6 +30,10 @@ define(dependencies.concat("css!./styles.css"),
     //   || '/extensions/qsSimpleList';
     // loadCSS(`${ROOT_URI}/styles.css`);
 
+    // if(module.hot) {
+    //   module.hot.accept();
+    // }
+
     const definition = setupDefinition({
       setAlwaysOneSelectedValue(fieldName, isAlwaysOneSelected) {
         const app = Qlik.currApp();

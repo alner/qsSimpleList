@@ -1,5 +1,5 @@
 var webpack = require('webpack');
-var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+//var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 //var CopyWebpackPlugin = require('copy-webpack-plugin');
 //var proxy = require('http-proxy-middleware');
 var path = require('path');
@@ -21,7 +21,8 @@ var config = {
   },
   output: {
     path: path.resolve(serverConfig.buildFolder),
-    filename: outputFilename // output file
+    filename: outputFilename, // output file
+//    publicPath: 'http://localhost:8080/sense'
   },
   externals: {
 		//"react": "React",
@@ -58,9 +59,10 @@ if(process.env.NODE_ENV !== 'production') {
     //config.devtool = 'source-map';
   config.debug = true;
   config.output.path = path.resolve(serverConfig.deployFolder);
-  //config.entry.js.unshift("webpack/hot/dev-server");
-  //config.entry.js.unshift("webpack-dev-server/client?http://localhost:" + devServerPort + "/");
-  //config.plugins.push(new webpack.HotModuleReplacementPlugin());
+//  config.entry.js.unshift("webpack/hot/dev-server");
+  config.entry.js.unshift("webpack-dev-server/client?http://localhost:" + devServerPort + "/", "webpack/hot/dev-server");
+  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  /*
   config.plugins.push(new BrowserSyncPlugin(
       // BrowserSync options
       {
@@ -87,6 +89,7 @@ if(process.env.NODE_ENV !== 'production') {
         reload: true
       }
     ));
+	*/
 } else {
   console.log('PRODUCTION configuration');
   config.plugins.push(new webpack.DefinePlugin({

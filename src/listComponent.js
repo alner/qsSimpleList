@@ -26,6 +26,7 @@ const CHANGE_HORIZONTAL_SCROLL = 'horizontalScroll';
 const CHANGE_VERTICAL_SCROLL = 'verticalScroll';
 const CHANGE_POPUP = 'popup';
 const CHANGE_SIZE = 'size';
+const CHANGE_SCROLL = 'scroll';
 
 const WIDTH_SWITCH_TO_COMPACT = 80; // switch to compact mode if the width is less then the value
 const MIN_BUTTON_WIDTH = 44;
@@ -81,8 +82,23 @@ class ListComponent extends Component {
     componentDidUpdate(){
       if(this.props.options.isResize
       || this.state.changeType === CHANGE_COMMIT
+      || this.state.changeType === CHANGE_SCROLL
+      || this.state.changeType === CHANGE_SIZE
       || this.state.changeType === CHANGE_RENDER)
         this.recalcSize();
+    }
+
+    componentWillReceiveProps(nextProps) {
+      let nextArea = nextProps.options.area;
+      let area = this.props.options.area;
+
+      if(nextProps.options.hideLabel != this.props.options.hideLabel         
+      || nextArea.qHeight != area.qHeight
+      || nextArea.qWidth != area.qWidth
+      || nextArea.qLeft != area.qLeft
+      || nextArea.qTop != area.qTop) {
+        this.setState({ isChanging: true, changeType: CHANGE_SIZE, hideLabel: nextProps.options.hideLabel});
+      }
     }
 
     componentWillUnmount(){
@@ -138,6 +154,20 @@ class ListComponent extends Component {
       return this.props.options.alwaysOneSelected || this.props.options.renderAs === 'select';
     }
 
+    isExpandButtonShow() {
+      const renderAs = this.state.renderAs || this.props.options.renderAs;
+      return (this.state.isCompactMode
+          || this.props.options.compactMode
+          || this.state.isHorizontalScroll
+          || this.state.isVerticalScroll
+          || this.popupService.isPopupShow())
+          && renderAs !== SELECT_RENDER
+    }
+
+    isHideTitle() {
+      return this.props.options.hideLabel || this.state.hideLabel || this.isExpandButtonShow();
+    }
+
     render() {
         const self = this;
         const {
@@ -154,9 +184,12 @@ class ListComponent extends Component {
         const isScroll = this.state.isHorizontalScroll
         || this.state.isVerticalScroll;
 
-        const isExpandButtonShow = (compactMode || isScroll
+        const isExpandButtonShow = this.isExpandButtonShow();
+        /* 
+        (compactMode || isScroll
           || this.popupService.isPopupShow())
           && renderAs !== SELECT_RENDER;
+          */
 
         const isScrollOrPopup = isScroll
         || this.popupService.isPopupShow();
@@ -203,9 +236,11 @@ class ListComponent extends Component {
         }
 
         let titleComponent;
+        let isHideTitle = this.isHideTitle(); 
+        //this.props.options.hideLabel || this.state.hideLabel || isExpandButtonShow;
         if(!this.props.options.hideLabel) {
           // if not enought room...
-          if(this.state.hideLabel || isExpandButtonShow) {
+          if(isHideTitle) {
             this._title = null;
           //   titleComponent = (<span ref={(c) => this._title = c}></span>);
           } else
@@ -229,7 +264,8 @@ class ListComponent extends Component {
               lastSelectedValue={this.state.qLastSelected}
               itemWidth={itemWidth}
               containerWidth={this.state.containerWidth}
-              titleWidth={this.state.titleWidth}
+              isTitleHidden={isHideTitle} 
+              titleWidth={isHideTitle ? 0 : this.state.titleWidth}
               selectionColor={this.props.options.selectionColor}
               transparentStyle={this.props.options.transparentStyle}
               isChanging={this.state.isChanging}
@@ -398,6 +434,9 @@ class ListComponent extends Component {
     commitChanges() {
       if(this.state.changeType === CHANGE_INIT)
         this.setState({ isChanging: false, changeType: CHANGE_COMMIT });
+      else
+      if(this.state.changeType === CHANGE_SIZE)
+        this.setState({ isChanging: true, changeType: CHANGE_SCROLL });
       else
         this.setState({ isChanging: false, changeType: null });
       //this.state.isChanging = false;
@@ -571,7 +610,9 @@ class ListComponent extends Component {
       containerWidth, containerHeight, containerPos,
       titleWidth, titleHeight, titlePos})
     {
-      if((this.state.isChanging && this.state.changeType !== CHANGE_INIT)
+      if((this.state.isChanging && 
+      (this.state.changeType !== CHANGE_INIT 
+      && this.state.changeType != CHANGE_SCROLL))
       || this.props.options.alwaysOneSelected) // if alwaysOneSelected - prefer to use select render
           // && (this.state.changeType !== CHANGE_HORIZONTAL_SCROLL
           // && this.state.changeType !== CHANGE_VERTICAL_SCROLL))
@@ -730,6 +771,7 @@ class ListComponent extends Component {
       if(this.state.isChanging
       && (this.state.changeType == CHANGE_INIT
        || this.state.changeType == CHANGE_COMMIT
+       || this.state.changeType == CHANGE_SCROLL
        || this.state.changeType == CHANGE_POPUP
        || this.state.changeType == CHANGE_SIZE))
         this.commitChanges();
