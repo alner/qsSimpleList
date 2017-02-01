@@ -58,14 +58,15 @@ define(dependencies.concat("css!./styles.css"),
         })
       }
     });
-    const {paint, resize, destroy} = setupPaint({ Qlik });
+    const lifecycleMethods = setupPaint({ Qlik });
 
     return {
       initialProperties,
       definition,
-      paint,
-      resize,
-      destroy,
+      // paint,
+      // resize,
+      // destroy,
+      ...lifecycleMethods,
       snapshot: {
         canTakeSnapshot : false
       }

@@ -1,10 +1,111 @@
-import RemoveButtonComponent from './definitionComponents';
+import RemoveButtonComponent, {PropertySelectionComponent} from './definitionComponents';
 
 export const BUTTON_RENDER = 'button';
 export const CHECKBOX_RENDER = 'sensecheckbox';
 export const SWITCH_RENDER = 'senseswitch';
 export const SELECT_RENDER = 'select';
 //export const POPUP_RENDER = 'popup';
+
+const actions = {
+    type: "items",
+    label: "Actions",
+    translation: "Storytelling.play.actions",
+    items: {
+        actions: {
+            type: "array",
+            ref: "actions",
+            label: "Actions",
+            itemTitleRef: "object", 
+            // function(data, index, handler){
+            //   var objectItem = _.find(configScope.masterObjectList, function(item) {
+            //       return item.qInfo.qId === data.object;
+            //   });
+
+            //   return (objectItem && objectItem.qMeta.title) || data.object;
+            // },
+            allowAdd: true,
+            allowRemove: true,
+            addTranslation: "Common.Create",
+            items: {
+              object: {
+                ref: "object",
+                label: "Object",
+                translation: "Common.CustomObjects",
+                type: "string",
+                /*
+                component: "dropdown",
+                options: function(propertyData) {
+                  return configScope.masterObjectList.map(function(item){
+                    return {
+                      value: item.qInfo.qId,
+                      label: item.qMeta.title
+                    }
+                  })
+                },
+                defaultValue: function(){
+                  return (configScope.activeTable && configScope.activeTable.qInfo.qId) || '';
+                }
+                */
+              },
+              actions: {
+                ref: "action",
+                label: "Action",
+                translation: "Storytelling.play.actions",
+                type: "string",
+                component: "dropdown",
+                options: [{
+                  value: "ApplyPatch",
+                  label: "Apply patch"
+                }]
+              },
+              patchPath: {
+                ref: "patchPath",
+                label: "Patch path",
+                translation: "Common.Custom",
+                type: "string"
+              },
+              patchOperation: {
+                ref: "patchOperation",
+                label: "Operation",
+                translation: "DataManager.ExpressionEditor.Operations",
+                component: "dropdown",
+                options: [
+                  {
+                    value: "add",
+                    label: "Add"
+                  },
+                  {
+                    value: "replace",
+                    label: "Replace"
+                  },
+                  {
+                    value: "remove",
+                    label: "Remove"
+                  }
+                ],
+                defaultValue: "replace" 
+              },
+              customValue: {
+                ref: "isCustomValue",
+                type: "boolean",
+                label: "Supply value",
+                translation: "properties.value",
+                defaultValue: false
+              },
+              patchValue: {
+                ref: "patchValue",
+                label: "Value",
+                translation: "properties.value",
+                type: "string",
+                expression: "optional",
+                show: function(data) {
+                  return data.isCustomValue;
+                }
+              }
+          }
+      }
+    }
+};
 
 export default function setupDefinition({ setAlwaysOneSelectedValue }) {
 
@@ -70,11 +171,6 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
         type : "boolean",
         component : RemoveButtonComponent,
         ref: "clearDimension",
-        // options : [{
-        //     value : null,
-        //     translation : "Common.Delete"
-        //   }
-        // ],
         show : function (a) {
           return a.qListObjectDef.qLibraryId || a.qListObjectDef.qDef.qFieldDefs[0];
         },
@@ -407,6 +503,7 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
     }
   };
 
+/*
   let addons = {
     type: "items",
     component: "expandable-items",
@@ -423,6 +520,7 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
       }
     }
   };
+*/
 
   return {
     type: "items",
@@ -430,7 +528,8 @@ export default function setupDefinition({ setAlwaysOneSelectedValue }) {
     items: {
       dimensions,
       sorting,
-      addons,
+      actions,
+//      addons,
       settings
     }
   }

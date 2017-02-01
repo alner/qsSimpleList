@@ -17,14 +17,15 @@ export default {
             qv: ""
           }
         }
-      ]
+      ]      
      },
-
     qInitialDataFetch : [{
         qWidth : 2,
         qHeight : 1000
     }],
   },
+
+  actions: [],
 
   selectionMode: "QUICK",
   selectionEnabled: true,

@@ -7,6 +7,9 @@ Features:
 - always one selected value;
 - lock selection
 
+Constraints:
+- no more than 1000 items can be shown.
+
 ![Simple KPI](doc/images/component.png)
 
 ## Configuration

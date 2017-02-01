@@ -60,8 +60,9 @@ if(process.env.NODE_ENV !== 'production') {
   config.debug = true;
   config.output.path = path.resolve(serverConfig.deployFolder);
 //  config.entry.js.unshift("webpack/hot/dev-server");
-  config.entry.js.unshift("webpack-dev-server/client?http://localhost:" + devServerPort + "/", "webpack/hot/dev-server");
-  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  config.entry.js.unshift("webpack-dev-server/client?http://localhost:" + devServerPort);
+  // + "/", "webpack/hot/dev-server");
+  //config.plugins.push(new webpack.HotModuleReplacementPlugin());
   /*
   config.plugins.push(new BrowserSyncPlugin(
       // BrowserSync options
@@ -106,6 +107,7 @@ if(process.env.NODE_ENV !== 'production') {
       comments: false,
     },
   }));
+  config.plugins.push(new webpack.optimize.DedupePlugin());
   config.plugins.push(new webpack.optimize.OccurenceOrderPlugin());
   // config.plugins.push(new CopyWebpackPlugin([{
   //   from: 'build',

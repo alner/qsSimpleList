@@ -1,5 +1,6 @@
 import {h, render} from 'preact';
 import ListComponent from './listComponent';
+import Subscribers from './updateData';
 
 export default function setupPaint({ Qlik }) {
 
@@ -11,7 +12,7 @@ export default function setupPaint({ Qlik }) {
       const data = layout.qListObject.qDataPages[0].qMatrix;
       const area = layout.qListObject.qDataPages[0].qArea;
       const fieldName = layout.qListObject.qDimensionInfo.qGroupFieldDefs[layout.qListObject.qDimensionInfo.qGroupPos].replace(/^=/, '');
-      const variableName = layout.variable;
+      //const variableName = layout.variable;
       const expValuesInsteadOfField = layout.qListObject.qExpressions.length > 0
         && layout.qListObject.qExpressions[0].qExpr;
       const app = Qlik.currApp();
@@ -51,9 +52,11 @@ export default function setupPaint({ Qlik }) {
           })
       }
       const selectValues = self.backendApi.selectValues.bind(self.backendApi);
-      const variableAPI = app.variable;
+//      const variableAPI = app.variable;
       const alwaysOneSelected = layout.alwaysOneSelected || (layout.renderAs === 'select');
       const selectionColor = 'rgb(70, 198, 70)';
+      const backendApi = self.backendApi;
+      const subscribers = self.subscribers;
       let options = {
         ...layout,
         label,
@@ -64,12 +67,13 @@ export default function setupPaint({ Qlik }) {
         selectValues,
         lockField,
         unlockField,
-        variableAPI,
-        variableName,
+//        variableAPI,
+//        variableName,
         selectionColor,
         alwaysOneSelected,
         isResize,
         expValuesInsteadOfField,
+        subscribers,
       };
 
       render(<ListComponent options={options}/>, element, element.lastChild);
@@ -90,10 +94,18 @@ export default function setupPaint({ Qlik }) {
       doPaint(this, $element, layout, true);
     },
 
+    updateData(layout) {
+      if(!this.subscribers)
+        this.subscribers = new Subscribers();
+
+      this.subscribers.onUpdateData(layout);
+      return Qlik.Promise.resolve();
+    },
+
     destroy($element, layout){
       const element = ($element)[0];
       if(element)
       render(<span></span>, element, element); // raise will/did unmount methods
     }
-  }
+  };
 }
