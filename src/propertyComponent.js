@@ -137,10 +137,13 @@ export default class PropertyComponent extends Component {
           (<span class="lui-list__aside lui-icon lui-icon--minus"></span>)
           :
           (<span class="lui-list__aside lui-icon lui-icon--plus"></span>);    
-    } 
+    }
     // else if(icon) {
     //     iconComponent = (<span class={`lui-list__aside lui-icon ${icon}`}></span>)
     // } 
+    else if(properties && subItems.length == 0) {
+      iconComponent = (<span class="lui-list__aside lui-icon lui-icon--close" style={{opacity: 0.5}}></span>);        
+    }
     else if(!icon)
       // default icon for a value
       iconComponent = (<span class="lui-list__aside lui-icon lui-icon--tag" style={{opacity: 0.7}}></span>);
