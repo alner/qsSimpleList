@@ -1,4 +1,4 @@
-import RemoveButtonComponent, {PropertySelectionComponent} from './definitionComponents';
+import {RemoveButtonComponent, PropertySelectionComponent, ObjectSelectionComponent} from './definitionComponents';
 
 export const BUTTON_RENDER = 'button';
 export const CHECKBOX_RENDER = 'sensecheckbox';
@@ -6,108 +6,110 @@ export const SWITCH_RENDER = 'senseswitch';
 export const SELECT_RENDER = 'select';
 //export const POPUP_RENDER = 'popup';
 
-const actions = {
-    type: "items",
-    label: "Actions",
-    translation: "Storytelling.play.actions",
-    items: {
-        actions: {
-            type: "array",
-            ref: "actions",
-            label: "Actions",
-            itemTitleRef: "object", 
-            // function(data, index, handler){
-            //   var objectItem = _.find(configScope.masterObjectList, function(item) {
-            //       return item.qInfo.qId === data.object;
-            //   });
+export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
 
-            //   return (objectItem && objectItem.qMeta.title) || data.object;
-            // },
-            allowAdd: true,
-            allowRemove: true,
-            addTranslation: "Common.Create",
-            items: {
-              object: {
-                ref: "object",
-                label: "Object",
-                translation: "Common.CustomObjects",
-                type: "string",
-                /*
-                component: "dropdown",
-                options: function(propertyData) {
-                  return configScope.masterObjectList.map(function(item){
-                    return {
-                      value: item.qInfo.qId,
-                      label: item.qMeta.title
-                    }
-                  })
+  const actions = {
+      type: "items",
+      label: "Actions",
+      translation: "Storytelling.play.actions",
+      items: {
+          actions: {
+              type: "array",
+              ref: "actions",
+              label: "Actions",
+              itemTitleRef: "object", 
+              // function(data, index, handler){
+              //   var objectItem = _.find(configScope.masterObjectList, function(item) {
+              //       return item.qInfo.qId === data.object;
+              //   });
+
+              //   return (objectItem && objectItem.qMeta.title) || data.object;
+              // },
+              allowAdd: true,
+              allowRemove: true,
+              addTranslation: "Common.Create",
+              items: {
+                actions: {
+                  ref: "action",
+                  label: "Action",
+                  translation: "Storytelling.play.actions",
+                  type: "string",
+                  component: "dropdown",
+                  options: [{
+                    value: "ApplyPatch",
+                    label: "Apply patch"
+                  }]
+                },                
+                object: {
+                  ref: "object",
+                  label: "Object",
+                  translation: "Common.CustomObjects",
+                  type: "string",
+                  component: ObjectSelectionComponent,
+                  onInit: () => ({
+                      app: Qlik.currApp()
+                  }),
+                  // change: function(propertyData, classObject, objectType) {
+                  //   // objectType from ObjectSelectionComponent is a selected object type.
+                  //   // See ObjectSelectionComponent component.
+                  //   console.log('change', propertyData, arguments);
+                  //   propertyData.objectType = objectType;
+                  // }
                 },
-                defaultValue: function(){
-                  return (configScope.activeTable && configScope.activeTable.qInfo.qId) || '';
-                }
-                */
-              },
-              actions: {
-                ref: "action",
-                label: "Action",
-                translation: "Storytelling.play.actions",
-                type: "string",
-                component: "dropdown",
-                options: [{
-                  value: "ApplyPatch",
-                  label: "Apply patch"
-                }]
-              },
-              patchPath: {
-                ref: "patchPath",
-                label: "Patch path",
-                translation: "Common.Custom",
-                type: "string"
-              },
-              patchOperation: {
-                ref: "patchOperation",
-                label: "Operation",
-                translation: "DataManager.ExpressionEditor.Operations",
-                component: "dropdown",
-                options: [
-                  {
-                    value: "add",
-                    label: "Add"
+                patchOperation: {
+                  ref: "patchOperation",
+                  label: "Operation",
+                  translation: "DataManager.ExpressionEditor.Operations",
+                  component: "dropdown",
+                  options: [
+                    {
+                      value: "add",
+                      label: "Add"
+                    },
+                    {
+                      value: "replace",
+                      label: "Replace"
+                    },
+                    {
+                      value: "remove",
+                      label: "Remove"
+                    }
+                  ],
+                  defaultValue: "replace" 
+                },              
+                patchPath: {
+                  ref: "patchPath",
+                  label: "Patch path",
+                  translation: "Common.Custom",
+                  component: PropertySelectionComponent,
+                  onInit: function(){
+                    return {
+                      app: Qlik.currApp()
+                    };
                   },
-                  {
-                    value: "replace",
-                    label: "Replace"
-                  },
-                  {
-                    value: "remove",
-                    label: "Remove"
+                  type: "string"
+                },
+                customValue: {
+                  ref: "isCustomValue",
+                  type: "boolean",
+                  label: "Supply value",
+                  translation: "properties.value",
+                  defaultValue: false
+                },
+                patchValue: {
+                  ref: "patchValue",
+                  label: "Value",
+                  translation: "properties.value",
+                  type: "string",
+                  expression: "optional",
+                  show: function(data) {
+                    return data.isCustomValue;
                   }
-                ],
-                defaultValue: "replace" 
-              },
-              customValue: {
-                ref: "isCustomValue",
-                type: "boolean",
-                label: "Supply value",
-                translation: "properties.value",
-                defaultValue: false
-              },
-              patchValue: {
-                ref: "patchValue",
-                label: "Value",
-                translation: "properties.value",
-                type: "string",
-                expression: "optional",
-                show: function(data) {
-                  return data.isCustomValue;
                 }
-              }
-          }
+            }
+        }
       }
-    }
-};
-
-export default function setupDefinition({ setAlwaysOneSelectedValue }) {
+  };
 
   let dimensions = {
     type : "items",

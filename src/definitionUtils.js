@@ -21,3 +21,10 @@ export function getRefValue(data, refName) {
   let {ref, name} = _getRefs(data, refName);
   return ref[name];
 }
+
+export function getSelectedObject(value) {
+  let values = (value && value.split(':')) || ['',''];
+  let object = values[0].trim();
+  let objectType = (values.length > 1 && values[1].trim().toLowerCase()) || '';
+  return {object, objectType};
+}

@@ -1,3 +1,6 @@
+import { getSelectedObject } from './definitionUtils';
+import { dimensionApplyPatch, measureApplyPatch } from './engineApi';
+
 export default function applyActions(app, layout, isSoftPatch) {
     const actions = layout.actions;
     if(!actions)
@@ -16,11 +19,25 @@ export default function applyActions(app, layout, isSoftPatch) {
     });
 
     // ApplyPatch action only - post processing
-    for (var object in patches) {
-        let p = patches[object];
-        app.getObjectProperties(object).then(model => {
-                model.applyPatches(p, isSoftPatch);
-            });
+    for (var id in patches) {
+        let p = patches[id];
+        let {object, objectType} = getSelectedObject(id);
+
+        switch(objectType) {
+            case 'dimension':
+                dimensionApplyPatch(app, object, p, isSoftPatch);
+                break;
+
+            case 'measure':
+                measureApplyPatch(app, object, p, isSoftPatch);
+                break;
+
+            case 'visualization':
+            default:
+                app.getObjectProperties(object).then(model => {
+                        model.applyPatches(p, isSoftPatch);
+                });
+        }
     }
 }
 
@@ -29,7 +46,7 @@ function applyPatchesAction(action, values, patches) {
         patches[action.object] = [];
 
     if(action.isCustomValue && action.patchValue)
-        values = action.patchValue.split(',');
+        values = action.patchValue.split(';'); // values delimited by ; consider as array
 
     patches[action.object].push({
         "qOp": action.patchOperation,

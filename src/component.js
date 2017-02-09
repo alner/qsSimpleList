@@ -35,6 +35,7 @@ define(dependencies.concat("css!./styles.css"),
     // }
 
     const definition = setupDefinition({
+      Qlik,
       setAlwaysOneSelectedValue(fieldName, isAlwaysOneSelected) {
         const app = Qlik.currApp();
         app.global.session.rpc({
