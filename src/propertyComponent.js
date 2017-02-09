@@ -178,7 +178,7 @@ export default class PropertyComponent extends Component {
                       </span>
                       }
                       {value != null &&
-                        <span className="lui-label lui-text-success">                          
+                        <span className="lui-text-success">
                           {value}
                         </span>
                       }

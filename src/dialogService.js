@@ -12,8 +12,9 @@ export default function show(component,
   ) {
     if(!popupNode) {
       popupNode = document.createElement('div');
-      popupNode.className = 'lui-modal-background';
-      popupNode.style = 'background:rgba(0, 0, 0, 0.3);opacity:1;'; // redefine some lui-modal-background options
+      popupNode.id = 'qsSimpleList-popupNode';
+      popupNode.className = 'lui-modal-background sl-modal-background';
+      //popupNode.style = 'background:rgba(0, 0, 0, 0.3);opacity:1;'; // redefine some lui-modal-background options
       setTimeout(() => {
         popupNode.onclick = function(e) {
           if(e.target == popupNode) {
@@ -24,7 +25,7 @@ export default function show(component,
         };
         popupNode.ontouchstart = popupNode.onclick;
       }, 500);
-      document.body.appendChild(popupNode);
+      document.body.appendChild(popupNode);      
     }
 
     const ApplyHandler = () => {
