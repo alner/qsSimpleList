@@ -220,7 +220,11 @@ function enhanceSheetObjectsProps(data, app) {
       sheet.subitems.map(obj => {
         return app.getObjectProperties(obj.name).then(
           // Add title
-          model => obj.title = model.properties.title
+          model => {
+            obj.title = (model.properties.title && model.properties.title.qStringExpression && model.properties.title.qStringExpression.qExpr)
+              || model.properties.title;
+            obj.type = model.properties.visualization || model.properties.qInfo.qType;
+          }
         ).catch(
           // ignore any error
           e => console.error(e)
@@ -294,8 +298,8 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
                           // if undefined/null returned "icon" property is used. 
                           if(props.level === 3) {
                             // props.value - see onGetValue above.
-                            let parts = props.value.split('"', 1);
-                            return (parts.length && getIconName(parts[0].trim())) || null;                            
+                            let parts = props.value && props.value.split('"', 1);
+                            return (parts && parts.length && getIconName(parts[0].trim())) || null;                            
                           }
                         }}
                         level={1}

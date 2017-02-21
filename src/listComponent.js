@@ -67,6 +67,10 @@ class ListComponent extends Component {
         finishSelection: this.finishSelection.bind(this)
       });
       this.onUpdateData = this.onUpdateData.bind(this);
+      const { subscribers, actions } = this.props.options;
+      // apply actions on first render
+      if(subscribers && actions)
+        subscribers.once(this.onUpdateData);
     }
 
     componentDidMount() {

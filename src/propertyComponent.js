@@ -134,31 +134,32 @@ export default class PropertyComponent extends Component {
     if(properties && subItems.length > 0) {
       // has child properties...
       iconComponent = this.isExpanded(level) ?
-          (<span class="lui-list__aside lui-icon lui-icon--minus"></span>)
+          (<span class={`lui-list__aside lui-icon lui-icon--minus ${isActive?'lui-text-success':''}`}></span>)
           :
-          (<span class="lui-list__aside lui-icon lui-icon--plus"></span>);    
+          (<span class={`lui-list__aside lui-icon lui-icon--plus ${isActive?'lui-text-success':''}`}></span>);    
     }
     // else if(icon) {
     //     iconComponent = (<span class={`lui-list__aside lui-icon ${icon}`}></span>)
     // } 
     else if(properties && subItems.length == 0) {
-      iconComponent = (<span class="lui-list__aside lui-icon lui-icon--close" style={{opacity: 0.5}}></span>);        
+      iconComponent = (<span class={`lui-list__aside lui-icon lui-icon--close ${isActive?'lui-text-success':''}`} style={{opacity: 0.5}}></span>);        
     }
     else if(!icon)
       // default icon for a value
-      iconComponent = (<span class="lui-list__aside lui-icon lui-icon--tag" style={{opacity: 0.7}}></span>);
+      iconComponent = (<span class={`lui-list__aside lui-icon lui-icon--tag ${isActive?'lui-text-success':''}`} style={{opacity: 0.7}}></span>);
 
     // custom icon
     let elementIconComponent;
     if(icon)
         elementIconComponent = (<span class={`lui-icon ${icon}`}></span>);
-      
+
+    // whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
     return (
         <div tabindex={0} style={{clear: 'both', paddingLeft: 10*level, cursor: 'pointer'}}>
               {level > 0 &&
                   <div className="lui-list__item" style={{minHeight:'28px', height: '28px'}} onClick={this.onExpand}>
                     {iconComponent}
-                    <span className="lui-list__text">
+                    <span className="lui-list__text" style={{whiteSpace: 'nowrap'}}>
                       <span 
                         className={`lui-tag ${isActive?'lui-bg-success':''}`}
                         style={{textAlign:'center'}}
