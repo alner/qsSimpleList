@@ -2,7 +2,7 @@ import {h, Component, render} from 'preact';
 import { getRefValue, setRefValue, getSelectedObject } from './definitionUtils';
 import showDialog from './dialogService';
 import PropertyComponent, {RootPropertyComponent, getIconName} from './propertyComponent';
-import { GetDimensionProperties, GetMeasureProperties } from './engineApi';
+import { GetDimensionProperties, GetMeasureProperties, GetBookmarkProperties, GetVariableProperties } from './engineApi';
 
  export const RemoveButtonComponent = {
   template:
@@ -123,6 +123,18 @@ function getObjectProperties(app, objectIdentifier) {
         model => Promise.resolve((model && model.result && model.result.qProp) || model)
       );
       break;
+
+    case 'bookmark':
+      resultPromise = GetBookmarkProperties(app, object).then(
+        model => Promise.resolve((model && model.result && model.result.qProp) || model)
+      );
+      break;
+
+    case 'variable':
+      resultPromise = GetVariableProperties(app, object).then(
+        model => Promise.resolve((model && model.result && model.result.qProp) || model)
+      );    
+      break;
     
     case 'visualization':
     default:
@@ -209,6 +221,24 @@ function getMasterMeasures(app) {
   ));  
 }
 
+function getBookmarks(app) {
+  return app.getList('BookmarkList').then(data => (
+      data.layout.qBookmarkList.qItems.reduce((obj, item) => {
+        obj[item.qInfo.qId] = item.qMeta.title;
+        return obj;
+      }, {})
+  ));
+}
+
+function getVariables(app) {
+  return app.getList('VariableList').then(data => (
+      data.layout.qVariableList.qItems.reduce((obj, item) => {
+        obj[item.qInfo.qId] = item.qName;
+        return obj;
+      }, {})
+  ));
+}
+
 function enhanceSheetObjectsProps(data, app) {
   let [Sheets, ...rest] = data;
 
@@ -246,24 +276,30 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
             Promise.all([
               // Sheets (and Visualizations on each sheet)
               getAppSheets(app),
-              // Master objects: visualizations
+              // Master visualizations
               getMasterObjects(app),
-              // Master Objects: Dimensions
+              // Master dimensions
               getMasterDimensions(app),
-              // Master Objects: Measures
-              getMasterMeasures(app)
+              // Master measures
+              getMasterMeasures(app),
+              // Bookmarks
+              getBookmarks(app),
+              // Variables
+              getVariables(app)
             ]).then(
               // add title to each visualization making async request.
               data => enhanceSheetObjectsProps(data, app)
              ).then(data => {
-                let [Sheets, MasterObjects, Dimensions, Measures] = data;
+                let [Sheets, MasterObjects, Dimensions, Measures, Bookmarks, Variables] = data;
 
                 // Model matches visual representation (almost)
                 let model = {
                   Sheets,
-                  ["Master Objects: Visualizations"]: MasterObjects,
-                  ["Master Objects: Dimensions"]: Dimensions,
-                  ["Master Objects: Measures"]: Measures
+                  ["Master visualizations"]: MasterObjects,
+                  ["Master dimensions"]: Dimensions,
+                  ["Master measures"]: Measures,
+                  Bookmarks,
+                  Variables
                 };
                 // value formated as: "objectid : objectype"
                 let {object, objectType} = getSelectedObject(c.t.value);
@@ -332,10 +368,10 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
                         isHideType={true}                        
                         />
                       <PropertyComponent
-                        name="Master Objects: Dimensions"
-                        icon="lui-icon--auto-layout"
+                        name="Master dimensions"
+                        icon="lui-icon--box"
                         level={1}
-                        properties={model["Master Objects: Dimensions"]}
+                        properties={model["Master dimensions"]}
                         isExcludeFromSelection = {true}
                         isGetLastSelectedItem={true}
                         isHideType={true}
@@ -346,10 +382,10 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
                         }}
                         />
                       <PropertyComponent
-                        name="Master Objects: Measures"
+                        name="Master measures"
                         icon="lui-icon--expression"
                         level={1}
-                        properties={model["Master Objects: Measures"]}
+                        properties={model["Master measures"]}
                         isExcludeFromSelection = {true}
                         isGetLastSelectedItem={true}
                         isHideType={true}
@@ -360,7 +396,7 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
                         }}
                         />
                       <PropertyComponent
-                        name="Master Objects: Visualizations"
+                        name="Master visualizations"
                         icon="lui-icon--object"
                         onGetIcon={function(props){
                           // override icon for visualuzations only... 
@@ -373,7 +409,7 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
                           }
                         }}
                         level={1}
-                        properties={model["Master Objects: Visualizations"]}
+                        properties={model["Master visualizations"]}
                         isExcludeFromSelection = {true}
                         isGetLastSelectedItem={true}
                         isHideType={true}
@@ -381,6 +417,34 @@ export const ObjectSelectionComponent = MakePropertySelectComponent({
                             // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
                             if (props.level == 2)
                               props.objectType = 'visualization';
+                        }}
+                        />
+                      <PropertyComponent
+                        name="Bookmarks"
+                        icon="lui-icon--bookmark"
+                        level={1}
+                        properties={model["Bookmarks"]}
+                        isExcludeFromSelection = {true}
+                        isGetLastSelectedItem={true}
+                        isHideType={true}
+                        onGetMetaData={function(props){
+                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                            if (props.level == 2)
+                              props.objectType = 'bookmark';
+                        }}
+                        />
+                      <PropertyComponent
+                        name="Variables"
+                        icon="data-icon=variables"
+                        level={1}
+                        properties={model["Variables"]}
+                        isExcludeFromSelection = {true}
+                        isGetLastSelectedItem={true}
+                        isHideType={true}
+                        onGetMetaData={function(props){
+                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                            if (props.level == 2)
+                              props.objectType = 'variable';
                         }}
                         />                        
                   </RootPropertyComponent>

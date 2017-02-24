@@ -1,3 +1,40 @@
+function GetProperties(app, data) {
+    let res;
+    if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
+        res = app.global.session.rpc({
+        "handle": data.result.qReturn.qHandle,
+        "method": "GetProperties",
+        "params": {},
+        })
+    else
+        res = Promise.reject();
+
+    return res;
+}
+
+function ApplyPatch(app, data, qPatches, qSoftPatch) {
+    let res;
+    console.log('ApplyPatches', qPatches);
+
+    let params = {
+        qPatches
+    };
+
+    if(typeof qSoftPatch != undefined) 
+        params.qSoftPatch = qSoftPatch;
+
+    if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
+        res = app.global.session.rpc({
+            "handle": data.result.qReturn.qHandle,
+            "method": "ApplyPatches",
+            "params": params
+        })
+    else 
+        res = Promise.reject();
+
+    return res;
+}
+
 function GetDimension(app, dimensionId) {
   return app.global.session.rpc({
     "handle": app.model.handle,
@@ -8,20 +45,7 @@ function GetDimension(app, dimensionId) {
 }
 
 export function GetDimensionProperties(app, dimensionId) {
-  return GetDimension(app, dimensionId)
-    .then((data) => {
-        let res;
-        if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
-            res = app.global.session.rpc({
-            "handle": data.result.qReturn.qHandle,
-            "method": "GetProperties",
-            "params": {},
-            })
-        else 
-            res = Promise.reject();
-
-        return res;
-    })
+  return GetDimension(app, dimensionId).then(data => GetProperties(app, data));
 }
 
 export function dimensionApplyPatch(app, dimensionId, qPatches, qSoftPatch) {
@@ -29,22 +53,7 @@ export function dimensionApplyPatch(app, dimensionId, qPatches, qSoftPatch) {
   //       model => model.applyPatches(qPatches)
   //     );
   // qSoftPatch - there is no need for the parameter. It doens't work with it.
-  return GetDimension(app, dimensionId)
-    .then((data) => {
-        let res;
-        if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
-            res = app.global.session.rpc({
-                "handle": data.result.qReturn.qHandle,
-                "method": "ApplyPatches",
-                "params": {
-                    qPatches                    
-                }
-            })
-        else 
-            res = Promise.reject();
-
-        return res;
-    })
+  return GetDimension(app, dimensionId).then(data => ApplyPatch(app, data, qPatches));
 }
 
 function GetMeasure(app, measureId) {
@@ -57,38 +66,46 @@ function GetMeasure(app, measureId) {
 }
 
 export function GetMeasureProperties(app, measureId) {
-  return GetMeasure(app, measureId)
-    .then((data) => {
-        let res;
-        if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
-            res = app.global.session.rpc({
-            "handle": data.result.qReturn.qHandle,
-            "method": "GetProperties",
-            "params": {},
-            })
-        else 
-            res = Promise.reject();
-
-        return res;
-    })
+  return GetMeasure(app, measureId).then(data => GetProperties(app, data));
 }
 
 export function measureApplyPatch(app, measureId, qPatches, qSoftPatch) {
   // qSoftPatch - there is no need for the parameter. It doens't work with it.
-  return GetMeasure(app, measureId)
-    .then((data) => {
-        let res;
-        if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
-            res = app.global.session.rpc({
-                "handle": data.result.qReturn.qHandle,
-                "method": "ApplyPatches",
-                "params": {
-                    qPatches                    
-                }
-            })
-        else 
-            res = Promise.reject();
+  return GetMeasure(app, measureId).then(data => ApplyPatch(app, data, qPatches));
+}
 
-        return res;
-    })
+function GetBookmark(app, bookmarkId) {
+  return app.global.session.rpc({
+    "handle": app.model.handle,
+    "method": "GetBookmark",
+    "params": {
+        "qId": bookmarkId,
+    }})
+}
+
+export function GetBookmarkProperties(app, bookmarkId) {
+  return GetBookmark(app, bookmarkId).then(data => GetProperties(app, data));
+}
+
+export function bookmarkApplyPatch(app, bookmarkId, qPatches, qSoftPatch) {
+  // qSoftPatch - there is no need for the parameter. It doens't work with it.
+  return GetBookmark(app, bookmarkId).then(data => ApplyPatch(app, data, qPatches));
+}
+
+function GetVariable(app, varId) {
+  return app.global.session.rpc({
+    "handle": app.model.handle,
+    "method": "GetVariableById",
+    "params": {
+        "qId": varId,
+    }})
+}
+
+export function GetVariableProperties(app, varId) {
+  return GetVariable(app, varId).then(data => GetProperties(app, data));
+}
+
+export function variableApplyPatch(app, varId, qPatches, qSoftPatch) {
+  // qSoftPatch - there is no need for the parameter. It doens't work with it.
+  return GetVariable(app, varId).then(data => ApplyPatch(app, data, qPatches));
 }

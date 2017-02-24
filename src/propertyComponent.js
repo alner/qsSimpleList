@@ -150,8 +150,12 @@ export default class PropertyComponent extends Component {
 
     // custom icon
     let elementIconComponent;
-    if(icon)
-        elementIconComponent = (<span class={`lui-icon ${icon}`}></span>);
+    if(icon) {
+        if(icon.indexOf('data-icon=') == 0)
+            elementIconComponent = (<span className="dicon" data-icon={`${icon.replace('data-icon=', '')}`}></span>);
+        else
+            elementIconComponent = (<span className={`lui-icon ${icon}`}></span>);
+    }
 
     // whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
     return (

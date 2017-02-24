@@ -1,5 +1,5 @@
 import { getSelectedObject } from './definitionUtils';
-import { dimensionApplyPatch, measureApplyPatch } from './engineApi';
+import { dimensionApplyPatch, measureApplyPatch, bookmarkApplyPatch, variableApplyPatch } from './engineApi';
 
 export default function applyActions(app, layout, isSoftPatch) {
     const actions = layout.actions;
@@ -30,6 +30,14 @@ export default function applyActions(app, layout, isSoftPatch) {
 
             case 'measure':
                 measureApplyPatch(app, object, p, isSoftPatch);
+                break;
+
+            case 'bookmark':
+                bookmarkApplyPatch(app, object, p, isSoftPatch);
+                break;
+
+            case 'variable':
+                variableApplyPatch(app, object, p, isSoftPatch);
                 break;
 
             case 'visualization':
