@@ -109,3 +109,75 @@ export function variableApplyPatch(app, varId, qPatches, qSoftPatch) {
   // qSoftPatch - there is no need for the parameter. It doens't work with it.
   return GetVariable(app, varId).then(data => ApplyPatch(app, data, qPatches));
 }
+
+function getLayout(app, data) {
+    return app.global.session.rpc({
+        "handle": data.result.qReturn.qHandle,
+        "method": "GetLayout",
+        "params": []
+    });
+}
+
+export function GetFieldList(app, 
+    defaultListDef = {
+        "qShowSystem": false,
+        "qShowHidden": true,
+        "qShowDerivedFields": true,
+        "qShowSemantic": true,
+        "qShowSrcTables": true,
+        "qShowImplicit": true
+    }) 
+{
+  return app.global.session.rpc({
+	"name": "FIELDLIST",
+	"method": "CreateSessionObject",
+    "handle": app.model.handle,
+    "params": [
+			{
+				"qInfo": {
+					"qType": "FieldList"
+				},
+				"qFieldListDef": defaultListDef
+			}
+	] 
+    }).then(data => getLayout(app, data));
+}
+
+export function DestroySessionObject(app, qId) {
+  return app.global.session.rpc({
+	"method": "DestroySessionObject",
+    "handle": app.model.handle,
+    "params": {
+        "qId": qId
+    }
+  });
+}
+
+export function GetField(app, qFieldName, qStateName="") {
+    return app.global.session.rpc({
+        "handle": app.model.handle,
+        "method": "GetField",
+        "params": {
+            "qFieldName": qFieldName,
+            "qStateName": qStateName
+        }
+    });
+}
+
+function FieldAPIMethod(app, data, method, params) {
+    let res;
+    if(data.result && data.result.qReturn && data.result.qReturn.qHandle)
+        res = app.global.session.rpc({
+            "handle": data.result.qReturn.qHandle,
+            "method": method,
+            "params": params
+        });
+    else
+        res = Promise.reject();
+
+    return res;    
+}
+
+export function CallFieldAPIMethod(app, fieldname, method, params,  qStateName="") {
+    return GetField(app, fieldname, qStateName).then(data => FieldAPIMethod(app, data, method, params));
+}

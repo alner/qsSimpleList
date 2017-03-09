@@ -2,7 +2,16 @@ import {h, Component, render} from 'preact';
 import { getRefValue, setRefValue, getSelectedObject } from './definitionUtils';
 import showDialog from './dialogService';
 import PropertyComponent, {RootPropertyComponent, getIconName} from './propertyComponent';
-import { GetDimensionProperties, GetMeasureProperties, GetBookmarkProperties, GetVariableProperties } from './engineApi';
+import { 
+  GetDimensionProperties, 
+  GetMeasureProperties, 
+  GetBookmarkProperties, 
+  GetVariableProperties,
+  GetFieldList,
+  DestroySessionObject } from './engineApi';
+
+export const APPLYPATCH_ACTION_TYPE = "ApplyPatch";
+export const FIELDAPI_ACTION_TYPE = "FieldAPI";
 
  export const RemoveButtonComponent = {
   template:
@@ -239,6 +248,18 @@ function getVariables(app) {
   ));
 }
 
+  /*
+function getFieldList(app) {
+  return app.getList('FieldList').then(data => (
+      data.layout.qFieldList.qItems.reduce((obj, item) => {
+        console.log(item);
+        obj[item.qName] = item.qTags.toString();
+        return obj;
+      }, {})
+  ));
+}
+  */
+
 function enhanceSheetObjectsProps(data, app) {
   let [Sheets, ...rest] = data;
 
@@ -267,195 +288,277 @@ function enhanceSheetObjectsProps(data, app) {
   return Promise.all(objectsEnhancements).then(v => [Sheets, ...rest]);  
 }
 
+function PrepareModelForApplyPatches(app) {
+  return Promise.all([
+    // Sheets (and Visualizations on each sheet)
+    getAppSheets(app),
+    // Master visualizations
+    getMasterObjects(app),
+    // Master dimensions
+    getMasterDimensions(app),
+    // Master measures
+    getMasterMeasures(app),
+    // Bookmarks
+    getBookmarks(app),
+    // Variables
+    getVariables(app)
+  ]).then(
+    // add title to each visualization making async request.
+    data => enhanceSheetObjectsProps(data, app)
+  ).then(data => {
+      let [Sheets, MasterObjects, Dimensions, Measures, Bookmarks, Variables] = data;
+
+      // Model matches visual representation (almost)
+      return  {
+        Sheets,
+        ["Master visualizations"]: MasterObjects,
+        ["Master dimensions"]: Dimensions,
+        ["Master measures"]: Measures,
+        Bookmarks,
+        Variables
+      };
+  });  
+}
+
+function PrepareModelForFieldsAPI(app) {
+  return Promise.all([
+    GetFieldList(app)
+  ]).then(data => {
+      let qItems = (data.length > 0 && data[0].result.qLayout.qFieldList.qItems) || [];
+      if(qItems.sort)
+        qItems.sort((a, b) => {
+            if (a.qName > b.qName) {
+              return 1;
+            }
+            if (a.qName < b.qName) {
+              return -1;
+            }
+            // a должно быть равным b
+            return 0;
+        });
+
+      let Fields = qItems.reduce((obj, item) => {
+        obj[item.qName] = item.qTags.toString();
+        return obj;
+      }, {})
+
+      // Free session object created by the GetFieldList
+      DestroySessionObject(app, data[0].result.qLayout.qInfo.qId);
+
+      // Model matches visual representation
+      return  {
+        Fields
+      };
+  });  
+}
+
+function getApplyPatchDialogContent(model, resultObject) {
+  return (
+                <RootPropertyComponent
+                    currentSelection={resultObject.object}
+                    properties={model}
+                    onSelectItem={(newValue, props) => {
+                        resultObject.object = newValue;
+                        resultObject.objectType = props.objectType;
+                    }}>
+                    <PropertyComponent
+                      name="Sheets"
+                      onGetName={function(props){
+                        if(props.name)
+                          return props.name;
+                        else
+                          return props;
+                      }}
+                      onGetValue={function(props){
+                        // for Sheets
+                        if(props.properties && props.properties.title) 
+                          return props.properties && props.properties.title;
+                        // for Objects
+                        else if(props.type) {
+                          return `${props.type} "${props.title}"`;
+                        }
+                      }}
+                      icon="lui-icon--sheet"
+                      onGetIcon={function(props){
+                        // override icon for visualuzations only... 
+                        // if undefined/null returned "icon" property is used. 
+                        if(props.level === 3) {
+                          // props.value - see onGetValue above.
+                          let parts = props.value && props.value.split('"', 1);
+                          return (parts && parts.length && getIconName(parts[0].trim())) || null;                            
+                        }
+                      }}
+                      level={1}
+                      properties={model.Sheets}
+                      onGetSubItems={function(props){
+                        //console.log(this, props, props.properties);
+                        // subitems - see app.getList('sheet') at the top ...
+                        if(props.properties && props.properties.subitems) {
+                          return props.properties.subitems;
+                        }
+                        else if(props.properties)
+                          return Object.keys(props.properties);
+                        else
+                          return [];
+                      }}
+                      onGetMetaData={function(props){
+                          let type;
+
+                          if (props.level == 2)
+                            type = 'sheet';
+                          else
+                          if(props.level == 3) 
+                            type = 'visualization'; 
+
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          props.objectType = type;
+                      }}
+                      isExcludeFromSelection = {true}                        
+                      isGetLastSelectedItem={true}
+                      isHideType={true}                        
+                      />
+                    <PropertyComponent
+                      name="Master dimensions"
+                      icon="lui-icon--box"
+                      level={1}
+                      properties={model["Master dimensions"]}
+                      isExcludeFromSelection = {true}
+                      isGetLastSelectedItem={true}
+                      isHideType={true}
+                      onGetMetaData={function(props){
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          if (props.level == 2)
+                            props.objectType = 'dimension';
+                      }}
+                      />
+                    <PropertyComponent
+                      name="Master measures"
+                      icon="lui-icon--expression"
+                      level={1}
+                      properties={model["Master measures"]}
+                      isExcludeFromSelection = {true}
+                      isGetLastSelectedItem={true}
+                      isHideType={true}
+                      onGetMetaData={function(props){
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          if (props.level == 2)
+                            props.objectType = 'measure';
+                      }}
+                      />
+                    <PropertyComponent
+                      name="Master visualizations"
+                      icon="lui-icon--object"
+                      onGetIcon={function(props){
+                        // override icon for visualuzations only... 
+                        // if undefined/null returned "icon" property is used. 
+                        // see app.getList('masterobject'). at the top.
+                        if(props.level === 2) {
+                          // value has template: 'type "title"' 
+                          let parts = props.value.split('"', 1);
+                          return (parts.length && getIconName(parts[0].trim())) || null;
+                        }
+                      }}
+                      level={1}
+                      properties={model["Master visualizations"]}
+                      isExcludeFromSelection = {true}
+                      isGetLastSelectedItem={true}
+                      isHideType={true}
+                      onGetMetaData={function(props){
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          if (props.level == 2)
+                            props.objectType = 'visualization';
+                      }}
+                      />
+                    <PropertyComponent
+                      name="Bookmarks"
+                      icon="lui-icon--bookmark"
+                      level={1}
+                      properties={model["Bookmarks"]}
+                      isExcludeFromSelection = {true}
+                      isGetLastSelectedItem={true}
+                      isHideType={true}
+                      onGetMetaData={function(props){
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          if (props.level == 2)
+                            props.objectType = 'bookmark';
+                      }}
+                      />
+                    <PropertyComponent
+                      name="Variables"
+                      icon="data-icon=variables"
+                      level={1}
+                      properties={model["Variables"]}
+                      isExcludeFromSelection = {true}
+                      isGetLastSelectedItem={true}
+                      isHideType={true}
+                      onGetMetaData={function(props){
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          if (props.level == 2)
+                            props.objectType = 'variable';
+                      }}
+                      />                        
+                </RootPropertyComponent>
+            )
+}
+
+function getFieldAPIDialogContent(model, resultObject) {
+  return (
+                <RootPropertyComponent
+                    currentSelection={resultObject.object}
+                    properties={model}
+                    onSelectItem={(newValue, props) => {
+                        resultObject.object = newValue;
+                        resultObject.objectType = props.objectType;
+                    }}>
+                    <PropertyComponent
+                      name="Fields"
+                      icon="lui-icon--field"
+                      level={0}
+                      properties={model["Fields"]}
+                      isExcludeFromSelection = {true}
+                      isGetLastSelectedItem={true}
+                      isHideType={true}
+                      onGetMetaData={function(props){
+                          // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
+                          if (props.level == 1)
+                            props.objectType = 'field';
+                      }}
+                      />
+                </RootPropertyComponent> 
+          )
+}
+
+
 export const ObjectSelectionComponent = MakePropertySelectComponent({
   luiIcon: 'lui-icon--shapes',
   showSelectionDialog() {
         let c = this; // scope
-        const { app } = (c.definition.onInit && c.definition.onInit());
+        const { app } = (c.definition.onInit && c.definition.onInit(c.data));
         if(app) {
-            Promise.all([
-              // Sheets (and Visualizations on each sheet)
-              getAppSheets(app),
-              // Master visualizations
-              getMasterObjects(app),
-              // Master dimensions
-              getMasterDimensions(app),
-              // Master measures
-              getMasterMeasures(app),
-              // Bookmarks
-              getBookmarks(app),
-              // Variables
-              getVariables(app)
-            ]).then(
-              // add title to each visualization making async request.
-              data => enhanceSheetObjectsProps(data, app)
-             ).then(data => {
-                let [Sheets, MasterObjects, Dimensions, Measures, Bookmarks, Variables] = data;
+          let prepareModelPromise;
+          let makeUIComponent;
+          if(c.data.action === APPLYPATCH_ACTION_TYPE) {
+            prepareModelPromise = PrepareModelForApplyPatches(app);
+            makeUIComponent = getApplyPatchDialogContent;
+          }
+          else {
+            // Fields API
+            prepareModelPromise = PrepareModelForFieldsAPI(app);
+            makeUIComponent = getFieldAPIDialogContent;
+          }
 
-                // Model matches visual representation (almost)
-                let model = {
-                  Sheets,
-                  ["Master visualizations"]: MasterObjects,
-                  ["Master dimensions"]: Dimensions,
-                  ["Master measures"]: Measures,
-                  Bookmarks,
-                  Variables
-                };
+          prepareModelPromise.then(model => {
                 // value formated as: "objectid : objectype"
-                let {object, objectType} = getSelectedObject(c.t.value);
+                let selectedObject = getSelectedObject(c.t.value);
                 showDialog(
-                  <RootPropertyComponent
-                      currentSelection={object}
-                      properties={model}
-                      onSelectItem={(newValue, props) => {
-                          object = newValue;
-                          objectType = props.objectType;
-                      }}>
-                      <PropertyComponent
-                        name="Sheets"
-                        onGetName={function(props){
-                          if(props.name)
-                            return props.name;
-                          else
-                            return props;
-                        }}
-                        onGetValue={function(props){
-                          // for Sheets
-                          if(props.properties && props.properties.title) 
-                            return props.properties && props.properties.title;
-                          // for Objects
-                          else if(props.type) {
-                            return `${props.type} "${props.title}"`;
-                          }
-                        }}
-                        icon="lui-icon--sheet"
-                        onGetIcon={function(props){
-                          // override icon for visualuzations only... 
-                          // if undefined/null returned "icon" property is used. 
-                          if(props.level === 3) {
-                            // props.value - see onGetValue above.
-                            let parts = props.value && props.value.split('"', 1);
-                            return (parts && parts.length && getIconName(parts[0].trim())) || null;                            
-                          }
-                        }}
-                        level={1}
-                        properties={model.Sheets}
-                        onGetSubItems={function(props){
-                          //console.log(this, props, props.properties);
-                          // subitems - see app.getList('sheet') at the top ...
-                          if(props.properties && props.properties.subitems) {
-                            return props.properties.subitems;
-                          }
-                          else if(props.properties)
-                            return Object.keys(props.properties);
-                          else
-                            return [];
-                        }}
-                        onGetMetaData={function(props){
-                            let type;
-
-                            if (props.level == 2)
-                              type = 'sheet';
-                            else
-                            if(props.level == 3) 
-                              type = 'visualization'; 
-
-                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
-                            props.objectType = type;
-                        }}
-                        isExcludeFromSelection = {true}                        
-                        isGetLastSelectedItem={true}
-                        isHideType={true}                        
-                        />
-                      <PropertyComponent
-                        name="Master dimensions"
-                        icon="lui-icon--box"
-                        level={1}
-                        properties={model["Master dimensions"]}
-                        isExcludeFromSelection = {true}
-                        isGetLastSelectedItem={true}
-                        isHideType={true}
-                        onGetMetaData={function(props){
-                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
-                            if (props.level == 2)
-                              props.objectType = 'dimension';
-                        }}
-                        />
-                      <PropertyComponent
-                        name="Master measures"
-                        icon="lui-icon--expression"
-                        level={1}
-                        properties={model["Master measures"]}
-                        isExcludeFromSelection = {true}
-                        isGetLastSelectedItem={true}
-                        isHideType={true}
-                        onGetMetaData={function(props){
-                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
-                            if (props.level == 2)
-                              props.objectType = 'measure';
-                        }}
-                        />
-                      <PropertyComponent
-                        name="Master visualizations"
-                        icon="lui-icon--object"
-                        onGetIcon={function(props){
-                          // override icon for visualuzations only... 
-                          // if undefined/null returned "icon" property is used. 
-                          // see app.getList('masterobject'). at the top.
-                          if(props.level === 2) {
-                            // value has template: 'type "title"' 
-                            let parts = props.value.split('"', 1);
-                            return (parts.length && getIconName(parts[0].trim())) || null;
-                          }
-                        }}
-                        level={1}
-                        properties={model["Master visualizations"]}
-                        isExcludeFromSelection = {true}
-                        isGetLastSelectedItem={true}
-                        isHideType={true}
-                        onGetMetaData={function(props){
-                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
-                            if (props.level == 2)
-                              props.objectType = 'visualization';
-                        }}
-                        />
-                      <PropertyComponent
-                        name="Bookmarks"
-                        icon="lui-icon--bookmark"
-                        level={1}
-                        properties={model["Bookmarks"]}
-                        isExcludeFromSelection = {true}
-                        isGetLastSelectedItem={true}
-                        isHideType={true}
-                        onGetMetaData={function(props){
-                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
-                            if (props.level == 2)
-                              props.objectType = 'bookmark';
-                        }}
-                        />
-                      <PropertyComponent
-                        name="Variables"
-                        icon="data-icon=variables"
-                        level={1}
-                        properties={model["Variables"]}
-                        isExcludeFromSelection = {true}
-                        isGetLastSelectedItem={true}
-                        isHideType={true}
-                        onGetMetaData={function(props){
-                            // objectType property used in onSelectItem on RootPropertyComponent to distinguish between different item types.
-                            if (props.level == 2)
-                              props.objectType = 'variable';
-                        }}
-                        />                        
-                  </RootPropertyComponent>
-                  ,
+                  makeUIComponent(model, selectedObject),
                   {
-                    DialogTitle: `${object}`,
+                    DialogTitle: `${selectedObject.object}`,
                     LabelOK: 'OK',
                     LabelCancel: 'Cancel',
                     onApply(){
                       // object, objectType. see onSelectItem.
-                      c.t.value = `${object} : ${objectType}`;
+                      c.t.value = `${selectedObject.object} : ${selectedObject.objectType}`;
                       c.onDataChange();
                   }
                 });

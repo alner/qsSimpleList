@@ -1,4 +1,7 @@
-import {RemoveButtonComponent, PropertySelectionComponent, ObjectSelectionComponent} from './definitionComponents';
+import {
+  RemoveButtonComponent, PropertySelectionComponent, ObjectSelectionComponent,
+  APPLYPATCH_ACTION_TYPE, FIELDAPI_ACTION_TYPE
+} from './definitionComponents';
 
 export const BUTTON_RENDER = 'button';
 export const CHECKBOX_RENDER = 'sensecheckbox';
@@ -6,7 +9,140 @@ export const SWITCH_RENDER = 'senseswitch';
 export const SELECT_RENDER = 'select';
 //export const POPUP_RENDER = 'popup';
 
+const ApplyPatchMethods = [
+  {
+    value: "add",
+    label: "Add"
+  },
+  {
+    value: "replace",
+    label: "Replace"
+  },
+  {
+    value: "remove",
+    label: "Remove"
+  }
+];
+
+const FieldAPIMethods = [{
+  value: "Clear",
+  label: "Clear",
+},
+{
+  value: "ClearAllButThis",
+  label: "ClearAllButThis",
+},
+{
+  value: "Lock",
+  label: "Lock",
+},
+{
+  value: "Unlock",
+  label: "Unlock",
+},
+{
+  value: "SelectAll",
+  label: "SelectAll",
+},
+{
+  value: "SelectAlternative",
+  label: "SelectAlternative",
+},
+{
+  value: "SelectPossible",
+  label: "SelectPossible",
+},
+{
+  value: "SelectExcluded",
+  label: "SelectExcluded",
+},
+{
+  value: "Select",
+  label: "Select",
+},
+{
+  value: "SelectValues",
+  label: "SelectValues",
+},
+{
+  value: "LowLevelSelect",
+  label: "LowLevelSelect",
+},
+{
+  value: "ToggleSelect",
+  label: "ToggleSelect",
+},
+{
+  value: "SetAndMode",
+  label: "SetAndMode",
+},
+{
+  value: "SetNxProperties",
+  label: "SetNxProperties",
+},
+];
+
+// See Field API methods using engine explorer
+const FieldAPIParams = {
+  Clear:'', // no parameters
+  ClearAllButThis: `{
+		"qSoftLock": false
+	}`,
+  Lock: '',
+  Unlock: '',
+  SelectAll: `{
+    "qSoftLock": false
+  }`,
+  SelectAlternative: `{
+    "qSoftLock": false
+  }`,
+  SelectPossible: `{
+    "qSoftLock": false
+  }`,
+  SelectExcluded: `{
+    "qSoftLock": false
+  }`,
+  Select: `{
+		"qMatch": "",
+		"qSoftLock": false,
+		"qExcludedValuesMode": 0
+	}`,
+  SelectValues: `{
+		"qFieldValues": [
+			{
+				"qText": "",
+				"qIsNumeric": false,
+				"qNumber": 0
+			}
+		],
+		"qToggleMode": false,
+		"qSoftLock": false
+	}`,
+  LowLevelSelect: `{
+		"qValues": [
+			0
+		],
+		"qToggleMode": false,
+		"qSoftLock": false
+	}`,
+  ToggleSelect: `{
+		"qMatch": "",
+		"qSoftLock": false,
+		"qExcludedValuesMode": 0
+	}`,
+  SetAndMode: `{
+		"qAndMode": false
+	}`,
+  SetNxProperties: `{
+		"qProperties": {
+			"qOneAndOnlyOne": false
+		}
+	}`
+};
+
 export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
+
+  let currentEditedAction;
 
   const actions = {
       type: "items",
@@ -36,9 +172,17 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
                   type: "string",
                   component: "dropdown",
                   options: [{
-                    value: "ApplyPatch",
+                    value: APPLYPATCH_ACTION_TYPE,
                     label: "Apply patch"
-                  }]
+                  },
+                  {
+                    value: FIELDAPI_ACTION_TYPE,
+                    label: "Field API"
+                  }
+                  ],
+                  change: function(data) {
+                    currentEditedAction = data.action;
+                  }
                 },                
                 object: {
                   ref: "object",
@@ -46,7 +190,7 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
                   translation: "Common.CustomObjects",
                   type: "string",
                   component: ObjectSelectionComponent,
-                  onInit: () => ({
+                  onInit: (data) => ({
                       app: Qlik.currApp()
                   }),
                   // change: function(propertyData, classObject, objectType) {
@@ -61,22 +205,32 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
                   label: "Operation",
                   translation: "DataManager.ExpressionEditor.Operations",
                   component: "dropdown",
-                  options: [
-                    {
-                      value: "add",
-                      label: "Add"
-                    },
-                    {
-                      value: "replace",
-                      label: "Replace"
-                    },
-                    {
-                      value: "remove",
-                      label: "Remove"
+                  options: function (data) {
+                    if(data.action && (typeof currentEditedAction == "undefined" || currentEditedAction != data.action))
+                      currentEditedAction = data.action;
+
+                    let action = currentEditedAction;
+
+                    switch (action) {
+                      case APPLYPATCH_ACTION_TYPE:
+                          return ApplyPatchMethods;
+                      
+                      case FIELDAPI_ACTION_TYPE:
+                        return FieldAPIMethods;
+
+                      default: 
+                        return [];
                     }
-                  ],
-                  defaultValue: "replace" 
-                },              
+                  },
+                  defaultValue: "",
+                  change: function(data) {
+                    if(data.action === FIELDAPI_ACTION_TYPE) {
+                      let params = FieldAPIParams[data.patchOperation];
+                      if(typeof params != undefined)  
+                        data.patchValue = params;
+                    }
+                  }
+                },
                 patchPath: {
                   ref: "patchPath",
                   label: "Patch path",
@@ -87,14 +241,20 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
                       app: Qlik.currApp()
                     };
                   },
-                  type: "string"
+                  type: "string",
+                  show: function(data) {
+                    return data.action == APPLYPATCH_ACTION_TYPE;
+                  }
                 },
                 customValue: {
                   ref: "isCustomValue",
                   type: "boolean",
                   label: "Supply value",
                   translation: "properties.value",
-                  defaultValue: false
+                  defaultValue: false,
+                  show: function(data) {
+                    return data.action == APPLYPATCH_ACTION_TYPE;
+                  }
                 },
                 patchValue: {
                   ref: "patchValue",
@@ -103,7 +263,7 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
                   type: "string",
                   expression: "optional",
                   show: function(data) {
-                    return data.isCustomValue;
+                    return data.isCustomValue || data.action == FIELDAPI_ACTION_TYPE;
                   }
                 }
             }
@@ -166,7 +326,7 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
         component : "expression",
         expressionType : "measure",
         //expressionType : "dimension",
-        ref : "qListObjectDef.qExpressions.0.qExpr",
+        ref : "qListObjectDef.qExpressions.0.qExpr", 
         translation : "Common.Measure",
       },
       clearDimension : {

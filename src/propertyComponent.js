@@ -10,7 +10,7 @@ export class RootPropertyComponent extends Component {
             <div>
                 {props.children.map(child => {
                         const name = child.attributes.name;
-                        const isActive = name && path.search(new RegExp(`/${name}(?=$|/)`)) != -1; 
+                        const isActive = name && path.search(new RegExp(`${name}(?=$|/)`)) != -1; 
                     
                         let props = {...child.attributes, parent: this, currentSelection: path, isActive };
                         return cloneElement(child,  props)
@@ -120,7 +120,7 @@ export default class PropertyComponent extends Component {
     const icon = (getIconFunc && getIconFunc(props)) || props.icon;
     const isShowType = !(typeof props.isHideType !== 'undefined' && props.isHideType); 
     const currentSelection = state.currentSelection || props.currentSelection;
-    const isActive = isGetLastSelectedItem ? currentSelection.search(new RegExp(`${name}$`)) != -1 : props.isActive; // name === currentSelection
+    const isActive = isGetLastSelectedItem ? currentSelection.search(new RegExp(`/${name}$`)) != -1 : props.isActive; // name === currentSelection
     const typeDescription = props.typeDescription;
     const level = props.level || 0;
     const onSelectItem = props.onSelectItem;

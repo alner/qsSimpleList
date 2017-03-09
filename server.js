@@ -16,8 +16,19 @@ module.exports.deployPathDestination = serverConfig.deployFolder;
 module.exports.start = function start(callback) {
 	var devServer = new WebpackDevServer(compiler, {
 	  contentBase: contentUrl,
-//	  hot: true,
-	  headers: { "Access-Control-Allow-Origin": "*" },
+	  //hot: true,
+	  headers: {
+			"Access-Control-Allow-Origin": "*"
+			//"Access-Control-Allow-Origin": "http://localhost:4848",
+			//"Access-Control-Allow-Credentials": true, 
+			// "Access-Control-Allow-Origin": "http://localhost:4848",
+			// "Access-Control-Allow-Credentials": true, 
+			// "Origin": "http://localhost:4848"
+			// http://localhost:4848
+			// "Origin": "http://localhost:4848",
+			// "Access-Control-Allow-Credentials": true,
+			// "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"
+		},
 //	  inline: true,
 	  historyApiFallback: true,
 	  filename: config.output.filename

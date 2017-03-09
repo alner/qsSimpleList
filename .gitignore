@@ -2,6 +2,5 @@ node_modules/
 VisualizationTemplate.js
 VisualizationTemplate.qext
 *.notused
-*.zip
 *.map
 *.log

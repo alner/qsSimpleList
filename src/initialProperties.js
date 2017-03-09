@@ -19,6 +19,7 @@ export default {
         }
       ]      
      },
+    qExpressions:[],
     qInitialDataFetch : [{
         qWidth : 2,
         qHeight : 1000

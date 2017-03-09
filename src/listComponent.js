@@ -13,7 +13,7 @@ import { BUTTON_RENDER, SELECT_RENDER, CHECKBOX_RENDER,
   SWITCH_RENDER } from './definition';
 import { createPopupService } from './popupService.js';
 import { selectionEvents } from './selectionEvents';
-import applyActions, {filterExcluded, isSelectedItem, getFieldValue} from './actions';
+import applyActions, {filterExcluded, isSelectedItem, isOptionalItem, getFieldValue} from './actions';
 //import SenseRadioButtonComponent from './senseRadiobutton';
 //"jsx!./multiselect.js"
 
@@ -118,7 +118,7 @@ class ListComponent extends Component {
       //let selectedCount = 0;
       let components = items.map(function (row) {
         let field = row[0];
-        let expression = row[1];
+        let expression = (row.length > 1 && row[1]) || null;
         let isSelected = isSelectedItem(row); // field.qState === 'S' || field.qState === 'L';
 
         if(isSelected && onItemSelectedCallback) {
@@ -131,7 +131,7 @@ class ListComponent extends Component {
           key={field.qElemNumber}
           data={field.qElemNumber}
           width={itemWidth}
-          text={expValuesInsteadOfField ? expression.qText : field.qText}
+          text={expValuesInsteadOfField && expression ? expression.qText : field.qText}
           state={field.qState}
           isSelected={isSelected}
           renderAs={renderAs}
@@ -222,14 +222,17 @@ class ListComponent extends Component {
         //   this.state.qSelected = selection;
 
         if(this.isAlwaysOneSelected() && items.length > 0
-        && (selectedCount > 1 || selectedCount == 0)) {
+        && (selectedCount > 1 || selectedCount == 0)) {          
           //let selectVariable = selectedCount == 0 && this.props.options.variable;
           //if(!selectVariable)
           //this.state.qLastSelectedText = items[0][0].qText; // to set variable value
-          // select first one if more then one selection exists
+          // select first one (optional) if more then one selection exists
+          const optionalItems = items.filter(isOptionalItem);
+          const value = (optionalItems.length > 0 && optionalItems[0][0].qElemNumber) || 0;  
+
           this.selectValues({
-            selectFirst: selectedCount == 0 || selectedCount > 1, //this.selectedValuesCount() > 1,
-//            selectVariable
+            selectFirst: true, //this.selectedValuesCount() > 1,
+            values:[value]
           });
         }
 
@@ -857,7 +860,7 @@ class ListComponent extends Component {
       return true;
     }
 
-    selectValues({selectFirst, /*selectVariable,*/ isToggle, values } = {false,  false, null}){
+    selectValues({selectFirst, /*selectVariable,*/ isToggle, values } = { false, null }){
       const isLockSelection = this.props.options.lockSelection;
       const { selectValues, lockField, unlockField, toggleMode, actions, subscribers, app } = this.props.options;
       //const field = this.props.options.field;
@@ -868,9 +871,9 @@ class ListComponent extends Component {
         qToggleMode = isToggle || false;
 
       //if(field) {
-      let toSelect = selectFirst ? [0] : values; //values(this.state.qSelected);
+      const toSelect = values;
       if(selectFirst)// && !selectVariable)
-        this.state.qLastSelected = 0;
+        this.state.qLastSelected = values.length > 0 ? values[0] : 0;
 
       let futureResult;
       if(isLockSelection)
