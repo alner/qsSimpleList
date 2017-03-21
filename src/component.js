@@ -13,7 +13,7 @@ define('resource-not-defined', function(){
 
 let dependencies = [
   'module',
-  'qlik',
+  'qlik'
 ].map(function(path){
   // check if dependencies were defined...
   if(defined(path) || path === 'module')

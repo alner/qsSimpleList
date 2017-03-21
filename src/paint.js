@@ -85,7 +85,8 @@ export default function setupPaint({ Qlik }) {
     }
   }
 
-  return {
+  return {    
+
     paint($element, layout) {
       doPaint(this, $element, layout);
     },
@@ -100,6 +101,38 @@ export default function setupPaint({ Qlik }) {
 
       this.subscribers.onUpdateData(layout);
       return Qlik.Promise.resolve();
+    },
+
+    getDropFieldOptions(builder, propertyHandler, model, showMenu, object){
+			let item = builder.item;
+			let itemType = item.type;
+      if(itemType === 'field') {
+        let newItem = propertyHandler.createFieldDimension(item.name, item.name);
+        propertyHandler.replaceDimension(0, newItem).then(function (dimension) {
+          model.save();
+          //qvangular.$rootScope.$broadcast("pp-open-path", "data." + dimension.qDef.cId)
+        });
+      }
+      // or build and show menu
+      // builder.Add(model, propertyHandler);
+      // builder.ReplaceDimensions(model, propertyHandler);
+      // showMenu();
+    },
+
+    getDropDimensionOptions(builder, propertyHandler, model, showMenu) {
+			let item = builder.item;
+			let itemType = item.type;
+      if(itemType === 'dimension') {      
+        let newItem = propertyHandler.createLibraryDimension(item.id);
+        propertyHandler.replaceDimension(0, newItem).then(function (dimension) {
+          model.save();
+          //qvangular.$rootScope.$broadcast("pp-open-path", "data." + dimension.qDef.cId)
+        });
+      }
+      // or build and show menu
+      // builder.Add(model, propertyHandler);
+      // builder.ReplaceDimensions(model, propertyHandler);
+      // showMenu();
     },
 
     destroy($element, layout){
