@@ -54,6 +54,7 @@ function applyPatchesAction(app, action, values, patches, isSoftPatch) {
     const p = patches[action.object]; 
     if(p) {
         // ApplyPatch action only - post processing
+        //console.log(JSON.stringify(p));
         let {object, objectType} = getSelectedObject(action.object);
 
         switch(objectType) {

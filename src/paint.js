@@ -85,11 +85,52 @@ export default function setupPaint({ Qlik }) {
     }
   }
 
-  return {    
+  return {
 
     paint($element, layout) {
       doPaint(this, $element, layout);
     },
+
+/*
+    onPaint() {
+      var dimensions,
+      measures,
+      $scope = this.$scope,
+      layout = $scope.layout,
+      minDimensions = $scope.ext.dimensionDefinition ? $scope.ext.dimensionDefinition.min : 0,
+      maxDimensions = $scope.ext.dimensionDefinition ? $scope.ext.dimensionDefinition.max : 0,
+      minMeasures = $scope.ext.measureDefinition ? $scope.ext.measureDefinition.min : 0,
+      maxMeasures = $scope.ext.measureDefinition ? $scope.ext.measureDefinition.max : 0;
+      $scope.showAdd = State.isInEditMode() && !$scope.object.isReadonly;
+      $scope.iconClass = $scope.object.ext.libraryInfo.templateIconClassName,
+      $scope.minDimensions = minDimensions,
+      $scope.minMeasures = minMeasures,
+      $scope.maxDimensions = maxDimensions,
+      $scope.maxMeasures = maxMeasures,
+      minDimensions !== maxDimensions || minMeasures !== maxMeasures ? $scope.headerStr = "Visualization.Requirements.AddAtLeast" : $scope.headerStr = "Visualization.Requirements.Add",
+      dimensions = getDimensionInfo(layout).map(function (dimension) {
+          var title,
+          errorCode = dimension.qError && dimension.qError.qErrorCode;
+          return title = errorCode ? errorTranslation.getDimensionError(errorCode) : dimension.title || dimension.qFallbackTitle, {
+            invalid : !!errorCode,
+            title : title
+          }
+        }),
+      measures = getMeasureInfo(layout).map(function (measure) {
+          var title,
+          errorCode = measure.qError && measure.qError.qErrorCode;
+          return title = errorCode ? errorTranslation.getMeasureError(errorCode) : measure.qFallbackTitle, {
+            invalid : !!errorCode,
+            title : title
+          }
+        }),
+      $scope.finishedDimensions = dimensions,
+      $scope.finishedMeasures = measures,
+      $scope.unfinishedDimensions = getArray(Math.max(0, $scope.minDimensions - $scope.finishedDimensions.length)),
+      $scope.unfinishedMeasures = getArray(Math.max(0, $scope.minMeasures - $scope.finishedMeasures.length)),
+      $scope.show = !0
+    },
+*/    
 
     resize($element, layout) {
       doPaint(this, $element, layout, true);
@@ -113,7 +154,7 @@ export default function setupPaint({ Qlik }) {
           //qvangular.$rootScope.$broadcast("pp-open-path", "data." + dimension.qDef.cId)
         });
       }
-      // or build and show menu
+      // or build up and show menu
       // builder.Add(model, propertyHandler);
       // builder.ReplaceDimensions(model, propertyHandler);
       // showMenu();
@@ -122,14 +163,14 @@ export default function setupPaint({ Qlik }) {
     getDropDimensionOptions(builder, propertyHandler, model, showMenu) {
 			let item = builder.item;
 			let itemType = item.type;
-      if(itemType === 'dimension') {      
+      if(itemType === 'dimension') {
         let newItem = propertyHandler.createLibraryDimension(item.id);
         propertyHandler.replaceDimension(0, newItem).then(function (dimension) {
           model.save();
           //qvangular.$rootScope.$broadcast("pp-open-path", "data." + dimension.qDef.cId)
         });
       }
-      // or build and show menu
+      // or build up and show menu
       // builder.Add(model, propertyHandler);
       // builder.ReplaceDimensions(model, propertyHandler);
       // showMenu();
