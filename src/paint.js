@@ -1,6 +1,7 @@
 import {h, render} from 'preact';
 import ListComponent from './listComponent';
 import Subscribers from './updateData';
+import applyActions from './actions';
 
 export default function setupPaint({ Qlik }) {
 
@@ -137,8 +138,10 @@ export default function setupPaint({ Qlik }) {
     },
 
     updateData(layout) {
-      if(!this.subscribers)
+      if(!this.subscribers) {
         this.subscribers = new Subscribers();
+        this.subscribers.once(() => applyActions(Qlik.currApp(), layout, true));
+      }
 
       this.subscribers.onUpdateData(layout);
       return Qlik.Promise.resolve();
@@ -150,7 +153,11 @@ export default function setupPaint({ Qlik }) {
       if(itemType === 'field') {
         let newItem = propertyHandler.createFieldDimension(item.name, item.name);
         propertyHandler.replaceDimension(0, newItem).then(function (dimension) {
-          model.save();
+          if(model.save)
+            model.save();
+          else
+          if(model.setProperties)
+            model.setProperties(propertyHandler.properties);
           //qvangular.$rootScope.$broadcast("pp-open-path", "data." + dimension.qDef.cId)
         });
       }
@@ -166,7 +173,11 @@ export default function setupPaint({ Qlik }) {
       if(itemType === 'dimension') {
         let newItem = propertyHandler.createLibraryDimension(item.id);
         propertyHandler.replaceDimension(0, newItem).then(function (dimension) {
-          model.save();
+          if(model.save)
+            model.save();
+          else
+          if(model.setProperties)
+            model.setProperties(propertyHandler.properties);
           //qvangular.$rootScope.$broadcast("pp-open-path", "data." + dimension.qDef.cId)
         });
       }

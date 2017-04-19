@@ -17,6 +17,9 @@ export default function applyActions(app, layout, isSoftPatch) {
         .filter((row) => isSelectedItem(row))
         .map(row => getFieldValue(row));
 
+    if(values.length == 0)
+        return;
+
     let patches = {};
     // 1. Actions preprocessing (applyPatchesAction)
     actions.map(action => {
