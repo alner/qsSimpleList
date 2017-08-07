@@ -60,6 +60,7 @@ export default function setupPaint({ Qlik }) {
       const subscribers = self.subscribers;
       let options = {
         ...layout,
+        layout,
         label,
         data,
         area,

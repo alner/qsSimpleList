@@ -396,7 +396,7 @@ function getApplyPatchDialogContent(model, resultObject) {
                         if(props.properties && props.properties.subitems) {
                           return props.properties.subitems;
                         }
-                        else if(props.properties)
+                        else if(props.properties && typeof(props.properties) == 'object')
                           return Object.keys(props.properties);
                         else
                           return [];

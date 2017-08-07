@@ -125,7 +125,7 @@ export default class PropertyComponent extends Component {
     const level = props.level || 0;
     const onSelectItem = props.onSelectItem;
     const onGetSubItems = props.onGetSubItems; 
-    const subItems = (onGetSubItems && onGetSubItems.call(this, props)) || Object.keys(properties);
+    const subItems = (onGetSubItems && onGetSubItems.call(this, props)) || (typeof properties == 'object' && Object.keys(properties)) || [];
 
     if(getMetaDataFunc)
         getMetaDataFunc(props);
@@ -322,6 +322,8 @@ function searchPathTo(obj, value, currentPath='') {
 
     if(typeof obj !== 'object')
         return;
+
+    if(!obj) return;
 
     const keys = Object.keys(obj);
     const idx = keys.indexOf(value);
