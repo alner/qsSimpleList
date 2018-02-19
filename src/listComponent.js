@@ -569,51 +569,53 @@ class ListComponent extends Component {
             }
           }
 
-        // if(renderAs == BUTTON_RENDER
-        //   && !this.props.options.compactMode
-        //   && this.props.options.itemsLayout === 'h'
-        //   && this.props.options.alwaysOneSelected) {
-        //     if(!this.state.renderAs &&
-        //       (totalHeight > mainHeight || this.state.itemWidthValue <= MIN_BUTTON_WIDTH)) {
-        //           if(!this.state.isChanging) {
-        //             this.setState({ isChanging: true, changeType: CHANGE_RENDER });
-        //           } else
-        //           if(this.state.renderAs != SELECT_RENDER)
-        //             this.setState({
-        //               renderAs: SELECT_RENDER,
-        //               switchBackWidthValue: mainWidth,
-        //               hideLabel: false,
-        //               itemWidth: "auto",
-        //               containerWidth: "auto",
-        //               itemWidthValue: undefined,
-        //               isItemWidthGrow: false });
-        //           else
-        //             this.commitChanges();
-        //             //this.setState({ isChanging: false, changeType: undefined });
-        //     } else
-        //     if(this.state.renderAs && !this.state.isChanging) {
-        //       if(mainWidth > this.state.switchBackWidthValue
-        //         || (totalHeight <= mainHeight && this.state.isItemWidthGrow)) {
-        //           // try to restore original...
-        //           this.setState({
-        //             renderAs: null,
-        //             switchBackWidthValue: null,
-        //             isItemWidthGrow: false,
-        //             isChanging: true,
-        //             changeType: CHANGE_RENDER })
-        //       }
-        //     } else if(this.state.isChanging) {
-        //       this.commitChanges();
-        //       //this.setState({ isChanging: false, changeType: null });
-        //     }
-        // } else
-        // if(this.state.isChanging){
-        //   this.commitChanges();
-        //   // this.setState({
-        //   //   isChanging: false,
-        //   //   changeType: null
-        //   // });
-        // }
+        if(this.props.options.responsiveMode) {
+          if(renderAs == BUTTON_RENDER
+            && !this.props.options.compactMode
+            && this.props.options.itemsLayout === 'h'
+            && this.props.options.alwaysOneSelected) {
+              if(!this.state.renderAs &&
+                (totalHeight > mainHeight || this.state.itemWidthValue <= MIN_BUTTON_WIDTH)) {
+                    if(!this.state.isChanging) {
+                      this.setState({ isChanging: true, changeType: CHANGE_RENDER });
+                    } else
+                    if(this.state.renderAs != SELECT_RENDER)
+                      this.setState({
+                        renderAs: SELECT_RENDER,
+                        switchBackWidthValue: mainWidth,
+                        hideLabel: false,
+                        itemWidth: "auto",
+                        containerWidth: "auto",
+                        itemWidthValue: undefined,
+                        isItemWidthGrow: false });
+                    else
+                      this.commitChanges();
+                      //this.setState({ isChanging: false, changeType: undefined });
+              } else
+              if(this.state.renderAs && !this.state.isChanging) {
+                if(mainWidth > this.state.switchBackWidthValue
+                  /*|| (totalHeight <= mainHeight && this.state.isItemWidthGrow)*/) {
+                    // try to restore original...
+                    this.setState({
+                      renderAs: null,
+                      switchBackWidthValue: null,
+                      isItemWidthGrow: false,
+                      isChanging: true,
+                      changeType: CHANGE_RENDER })
+                }
+              } else if(this.state.isChanging) {
+                this.commitChanges();
+                //this.setState({ isChanging: false, changeType: null });
+              }
+          } else
+          if(this.state.isChanging){
+            this.commitChanges();
+            // this.setState({
+            //   isChanging: false,
+            //   changeType: null
+            // });
+          }
+        }
     }
 
     changeScroll({

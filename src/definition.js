@@ -632,6 +632,15 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
               return !(data.renderAs === 'select');
             }
           },
+          responsiveMode: {
+            type: "boolean",
+            label: "Responsive mode",
+            ref: "responsiveMode",
+            defaultValue: false,
+            show: function(data){
+              return (data.renderAs === 'button');
+            }
+          },
           /*
           itemsLayout: {
             type: "string",
