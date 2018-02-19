@@ -1,6 +1,6 @@
 {
   "name": "qsSimpleList",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "Simple List extension for Qlik Sense",
   "keywords": "qliksense extension",
   "main": "VisualizationTemplate.js",
