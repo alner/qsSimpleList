@@ -207,6 +207,7 @@ class ListComponent extends Component {
             ++selectedCount;
             //selection[field.qElemNumber] = field.qElemNumber;
 
+            // this is a bad practice to modify state in such way/place
             if(this.state.qLastSelected !== field.qElemNumber)
               this.state.qLastSelected = field.qElemNumber;
 
@@ -872,6 +873,11 @@ class ListComponent extends Component {
       //const variableAPI = this.props.options.variableAPI;
       //const variable = this.props.options.variable;
       let qToggleMode = !toggleMode;
+      if(toggleMode && values[0] == this.state.qLastSelected) {
+        // should clear selection (!)
+        qToggleMode = true;
+      }
+
       if(!toggleMode)
         qToggleMode = isToggle || false;
 
