@@ -23,6 +23,7 @@ Constraints:
 ## Maintainers
 
 [alner](https://github.com/alner)
+[dligthart](https://github.com/dligthart)
 
 ## License
 
