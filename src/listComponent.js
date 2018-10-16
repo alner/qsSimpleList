@@ -93,7 +93,7 @@ class ListComponent extends Component {
       let nextArea = nextProps.options.area;
       let area = this.props.options.area;
 
-      if(nextProps.options.hideLabel != this.props.options.hideLabel         
+      if(nextProps.options.hideLabel != this.props.options.hideLabel
       || nextArea.qHeight != area.qHeight
       || nextArea.qWidth != area.qWidth
       || nextArea.qLeft != area.qLeft
@@ -186,7 +186,7 @@ class ListComponent extends Component {
         || this.state.isVerticalScroll;
 
         const isExpandButtonShow = this.isExpandButtonShow();
-        /* 
+        /*
         (compactMode || isScroll
           || this.popupService.isPopupShow())
           && renderAs !== SELECT_RENDER;
@@ -226,13 +226,13 @@ class ListComponent extends Component {
         //   this.state.qSelected = selection;
 
         if(this.isAlwaysOneSelected() && items.length > 0
-        && (selectedCount > 1 || selectedCount == 0)) {          
+        && (selectedCount > 1 || selectedCount == 0)) {
           //let selectVariable = selectedCount == 0 && this.props.options.variable;
           //if(!selectVariable)
           //this.state.qLastSelectedText = items[0][0].qText; // to set variable value
           // select first one (optional) if more then one selection exists
           const optionalItems = items.filter(isOptionalItem);
-          const value = (optionalItems.length > 0 && optionalItems[0][0].qElemNumber) || 0;  
+          const value = (optionalItems.length > 0 && optionalItems[0][0].qElemNumber) || 0;
 
           this.selectValues({
             selectFirst: true, //this.selectedValuesCount() > 1,
@@ -241,7 +241,7 @@ class ListComponent extends Component {
         }
 
         let titleComponent;
-        let isHideTitle = this.isHideTitle(); 
+        let isHideTitle = this.isHideTitle();
         //this.props.options.hideLabel || this.state.hideLabel || isExpandButtonShow;
         if(!this.props.options.hideLabel) {
           // if not enought room...
@@ -269,7 +269,7 @@ class ListComponent extends Component {
               lastSelectedValue={this.state.qLastSelected}
               itemWidth={itemWidth}
               containerWidth={this.state.containerWidth}
-              isTitleHidden={isHideTitle} 
+              isTitleHidden={isHideTitle}
               titleWidth={isHideTitle ? 0 : this.state.titleWidth}
               selectionColor={this.props.options.selectionColor}
               transparentStyle={this.props.options.transparentStyle}
@@ -433,8 +433,8 @@ class ListComponent extends Component {
 
     getSelectedValues() {
       const data = this.props.options.data;
-      return data.filter(item => { 
-        return isSelectedItem(item); 
+      return data.filter(item => {
+        return isSelectedItem(item);
       }).map(item => { return getFieldValue(item) });
     }
 
@@ -624,8 +624,8 @@ class ListComponent extends Component {
       containerWidth, containerHeight, containerPos,
       titleWidth, titleHeight, titlePos})
     {
-      if((this.state.isChanging && 
-      (this.state.changeType !== CHANGE_INIT 
+      if((this.state.isChanging &&
+      (this.state.changeType !== CHANGE_INIT
       && this.state.changeType != CHANGE_SCROLL))
       || this.props.options.alwaysOneSelected) // if alwaysOneSelected - prefer to use select render
           // && (this.state.changeType !== CHANGE_HORIZONTAL_SCROLL
@@ -866,7 +866,7 @@ class ListComponent extends Component {
       return true;
     }
 
-    selectValues({selectFirst, /*selectVariable,*/ isToggle, values } = { false, null }){
+    selectValues({selectFirst, /*selectVariable,*/ isToggle, values } = {selectFirst: false, isToggle: null }){
       const isLockSelection = this.props.options.lockSelection;
       const { selectValues, lockField, unlockField, toggleMode, actions, subscribers, app } = this.props.options;
       //const field = this.props.options.field;
@@ -924,7 +924,7 @@ class ListComponent extends Component {
       //         lockField()
       //         //field.lock();
 
-      //       //applyActions(app, actions, this.getSelectedValues(), true);              
+      //       //applyActions(app, actions, this.getSelectedValues(), true);
       //     });
       //   });
       //}
