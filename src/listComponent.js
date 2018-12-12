@@ -324,7 +324,7 @@ class ListComponent extends Component {
                 */
                 style={{
                   paddingLeft: isScrollOrPopup ? "47px" : "0px",
-                  visibility: isPopupHiddenInCompactMode || this.state.isChanging ? 'hidden' : 'visible'
+                  visibility: isPopupHiddenInCompactMode /*|| this.state.isChanging*/ ? 'hidden' : 'visible'
                 }}
               >
               <div style={{display: "inline-block", width: "100%", position: "relative", height: "100%", }}>
