@@ -379,7 +379,10 @@ class ListComponent extends Component {
 
         let styles = {
           height: "100%",
+          overflow: "auto",
+          webkitOverflowScrolling: "touch",
         };
+        /*
         if(isPopupHiddenInCompactMode) {
           styles.overflow = 'hidden';
         } else
@@ -390,6 +393,7 @@ class ListComponent extends Component {
           styles.overflowY = (this.state.isVerticalScroll) ? 'scroll' : 'hidden';
           //styles.webkitOverflowScrolling = 'touch';
         };
+        */
 
         const simpleListComponent = (
           <div ref={(c) => this._main = c} className="qv-object-simple-list qv-object-sl-touch"
@@ -772,6 +776,7 @@ class ListComponent extends Component {
         this.changeSize({ itemWidth: '', containerWidth, containerHeight });
       }
 
+      /*
       this.changeRenderType({
         mainWidth, mainHeight,
         containerWidth, containerHeight, containerPos,
@@ -781,6 +786,7 @@ class ListComponent extends Component {
         mainWidth, mainHeight,
         containerWidth, containerHeight, containerPos,
         titleWidth, titleHeight, titlePos });
+      */
 
       if(this.state.isChanging
       && (this.state.changeType == CHANGE_INIT
