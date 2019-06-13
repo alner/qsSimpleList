@@ -36,6 +36,7 @@ const MAX_ITEMS_IN_TOOLTIP = 64;
 class ListComponent extends Component {
     constructor(props) {
       super(props);
+      console.log(props);
       this.state = {
         //qSelected: {},
         isSelectionStarted: false,
@@ -64,7 +65,10 @@ class ListComponent extends Component {
       this.eventsInjector = selectionEvents.bind(this, {
         changeHandler: this.selectionHandler.bind(this),
         changeSelection: this.changeSelection.bind(this),
-        finishSelection: this.finishSelection.bind(this)
+        finishSelection: this.finishSelection.bind(this),
+        options: {
+          alwaysOneSelected: props.options.alwaysOneSelected,
+        }
       });
       this.onUpdateData = this.onUpdateData.bind(this);
       // const { subscribers, actions } = this.props.options;
@@ -113,6 +117,7 @@ class ListComponent extends Component {
         itemsLayout,
         showState,
         expValuesInsteadOfField,
+        alwaysOneSelected,
       } = this.props.options;
       const renderAs = this.state.renderAs || this.props.options.renderAs;
 
@@ -276,7 +281,11 @@ class ListComponent extends Component {
               isChanging={this.state.isChanging}
               isScroll={this.state.isHorizontalScroll || this.state.isVerticalScroll}
               isPopup={this.popupService.isPopupShow()}
-              isHidden={isPopupHiddenInCompactMode}>
+              isHidden={isPopupHiddenInCompactMode}
+              options={{
+                alwaysOneSelected: this.isAlwaysOneSelected(),
+              }}
+            >
             {components}
             </Container>
           );

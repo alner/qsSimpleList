@@ -1,6 +1,7 @@
 export function selectionEvents(props) {
   const self = this;
   let tid = null;
+  const isAlwaysOneSelected = props.options && props.options.alwaysOneSelected;
 
   const clearTimer = () => {
     if(tid) {
@@ -11,6 +12,7 @@ export function selectionEvents(props) {
 
   return {
     onClick: (e) => {
+      console.log('onClick');
       self.base.onmousemove = null;
       props.finishSelection(e);
       props.changeHandler && props.changeHandler(e);
@@ -45,7 +47,7 @@ export function selectionEvents(props) {
       props.finishSelection(e);
     },
 
-    onTouchStart: (e) => {
+    onTouchStart: ((e) => {
       e.preventDefault();
       clearTimer();
       self.base.onmousemove = null;
@@ -53,17 +55,23 @@ export function selectionEvents(props) {
         props.changeHandler && props.changeHandler(e);
         props.finishSelection(e);
       }, 250);
-    },
+    }),
 
-    onTouchMove: (e) => {
+    onTouchMove: !isAlwaysOneSelected && ((e) => {
       e.preventDefault();
       clearTimer();
       props.changeSelection(e);
-    },
+    }),
 
     onTouchEnd: (e) => {
       e.preventDefault();
-      props.finishSelection(e);
+      clearTimer();
+      if(isAlwaysOneSelected) {
+        props.changeHandler && props.changeHandler(e);
+      } else {
+        props.changeHandler && props.changeHandler(e);        
+        props.finishSelection(e);
+      }
     }
   }
 }
