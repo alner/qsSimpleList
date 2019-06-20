@@ -14,6 +14,9 @@
   "author": "Alexander Nerush <ale.nerush@gmail.com>",
   "license": "MIT",
   "repository": "https://github.com/alner/NewQlikSenseVisualizationTemplate",
+  "engines": {
+    "node":"6.6.0"
+  },
   "dependencies": {
     "lodash.isequal": "^4.2.0",
     "lodash.values": "^4.1.0",
