@@ -36,7 +36,6 @@ const MAX_ITEMS_IN_TOOLTIP = 64;
 class ListComponent extends Component {
     constructor(props) {
       super(props);
-      console.log(props);
       this.state = {
         //qSelected: {},
         isSelectionStarted: false,

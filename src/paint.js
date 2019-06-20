@@ -78,7 +78,10 @@ export default function setupPaint({ Qlik }) {
         subscribers,
       };
 
-      render(<ListComponent options={options}/>, element, element.lastChild);
+      if(layout.hideCondition == -1)
+        render(<div />, element, element.lastChild);
+      else
+        render(<ListComponent options={options}/>, element, element.lastChild);
 
       // Remove zoom-in button:
       // const $parent = $element.parents('.qv-object-qsSimpleList');

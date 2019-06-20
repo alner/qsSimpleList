@@ -641,6 +641,13 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
               return (data.renderAs === 'button');
             }
           },
+          hideCondition: {
+            ref: "hideCondition",
+            type: "integer",
+            label: "Hide condition",
+            defaultValue: '',
+            expression: "always",
+          },
           /*
           itemsLayout: {
             type: "string",
