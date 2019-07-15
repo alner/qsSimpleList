@@ -49,6 +49,7 @@ export function selectionEvents(props) {
 
     onTouchStart: ((e) => {
       e.preventDefault();
+      e.stopPropagation();
       clearTimer();
       self.base.onmousemove = null;
       tid = setTimeout(() => {
@@ -59,12 +60,14 @@ export function selectionEvents(props) {
 
     onTouchMove: !isAlwaysOneSelected && ((e) => {
       e.preventDefault();
+      e.stopPropagation();
       clearTimer();
       props.changeSelection(e);
     }),
 
     onTouchEnd: (e) => {
       e.preventDefault();
+      e.stopPropagation();
       clearTimer();
       if(isAlwaysOneSelected) {
         props.changeHandler && props.changeHandler(e);
