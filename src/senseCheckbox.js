@@ -68,12 +68,12 @@ export default class SenseCheckBoxComponent extends Component {
         */
         return (
           <div style={itemStyle}>
-            <div className="lui-switch qui-onoffswitch" style={floatLeftStyle}>
-              <label className="lui-switch__label onoffswitch-label">
-                <input type="checkbox" className="lui-switch__checkbox onoffswitch-checkbox" checked={isSelected} />
-                <span className="lui-switch__span onoffswitch-span">
-                  <div className="lui-switch__inner onoffswitch-inner" data-value={data} data-text={text}></div>
-                  <div className="lui-switch__switch onoffswitch-switch" data-value={data} data-text={text}></div>
+            <div className="lui-switch" style={floatLeftStyle}>
+              <label className="lui-switch__label">
+                <input type="checkbox" className="lui-switch__checkbox" checked={isSelected} />
+                <span className="lui-switch__wrap">
+                  <div className="lui-switch__inner" data-value={data} data-text={text}></div>
+                  <div className="lui-switch__switch" data-value={data} data-text={text}></div>
                 </span>
               </label>
             </div>

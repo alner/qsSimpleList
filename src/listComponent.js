@@ -10,11 +10,11 @@ import ButtonComponent from './button';
 import SelectComponent from './select';
 import SenseCheckBoxComponent from './senseCheckbox';
 import { BUTTON_RENDER, SELECT_RENDER, CHECKBOX_RENDER,
-  SWITCH_RENDER } from './definition';
+  SWITCH_RENDER, RADIOBUTTON_RENDERER } from './definition';
 import { createPopupService } from './popupService.js';
 import { selectionEvents } from './selectionEvents';
 import applyActions, {filterExcluded, isSelectedItem, isOptionalItem, getFieldValue} from './actions';
-//import SenseRadioButtonComponent from './senseRadiobutton';
+import SenseRadioButtonComponent from './senseRadiobutton';
 //"jsx!./multiselect.js"
 
 // Register default renderer
@@ -655,6 +655,7 @@ class ListComponent extends Component {
       if((renderAs == BUTTON_RENDER
         || renderAs == CHECKBOX_RENDER
         || renderAs == SWITCH_RENDER
+        || renderAs == RADIOBUTTON_RENDERER
       )
       && this.props.options.itemsLayout === 'v') {
         if(totalHeight > mainHeight
@@ -676,6 +677,7 @@ class ListComponent extends Component {
       if((renderAs == BUTTON_RENDER
         || renderAs == CHECKBOX_RENDER
         || renderAs == SWITCH_RENDER
+        || renderAs == RADIOBUTTON_RENDERER
       )
       && this.props.options.itemsLayout === 'h') {
         if(totalHeight > mainHeight

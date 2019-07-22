@@ -19,13 +19,15 @@ export default class SenseRadioButtonComponent extends Component {
         checkStyle.background = this.props.selectionColor;
       }
 
-      return (<div className={"qui-radiobutton"} style={itemStyle}>
-              <input type="radio" data-value={data} checked={isSelected} />
-              <div className={"radio-wrap"}>
-                <span data-value={data} data-text={text} className={"radio"} style={checkStyle} />
-                <span data-value={data} data-text={text} className={"radio-text"}>{text}</span>
+      return (
+        <div className="lui-radiobutton" style={itemStyle}>
+              <input className="lui-radiobutton__input" type="radio" data-value={data} checked={isSelected} />
+              <div className="lui-radiobutton__radio-wrap">
+                <span data-value={data} data-text={text} className="lui-radiobutton__radio" style={checkStyle} />
+                <span data-value={data} data-text={text} className="lui-radiobutton__radio-text">{text}</span>
               </div>
-          </div>);
+        </div>
+      );
     }
 };
 

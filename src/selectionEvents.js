@@ -12,7 +12,6 @@ export function selectionEvents(props) {
 
   return {
     onClick: (e) => {
-      console.log('onClick');
       self.base.onmousemove = null;
       props.finishSelection(e);
       props.changeHandler && props.changeHandler(e);

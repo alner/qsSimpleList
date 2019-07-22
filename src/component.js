@@ -38,7 +38,7 @@ define(dependencies.concat("css!./styles.css"),
       Qlik,
       setAlwaysOneSelectedValue(fieldName, isAlwaysOneSelected) {
         const app = Qlik.currApp();
-        app.global.session.rpc({
+        return app.global.session.rpc({
           "method": "GetField",
           "handle": app.model.handle,
           "params": [`${fieldName}`]

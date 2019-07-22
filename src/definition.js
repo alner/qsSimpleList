@@ -7,6 +7,7 @@ export const BUTTON_RENDER = 'button';
 export const CHECKBOX_RENDER = 'sensecheckbox';
 export const SWITCH_RENDER = 'senseswitch';
 export const SELECT_RENDER = 'select';
+export const RADIOBUTTON_RENDERER = 'senseradiobutton';
 //export const POPUP_RENDER = 'popup';
 
 const ApplyPatchMethods = [
@@ -530,20 +531,25 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
               value : SWITCH_RENDER,
               label : "Switch"
             },
-            // {
-            //   value : "senseradiobutton",
-            //   label : "Sense radio buttons"
-            // },
             {
               value : SELECT_RENDER,
               label : "Select"
+            },
+            {
+              value : RADIOBUTTON_RENDERER,
+              label : "Radio buttons"
             },
             // {
             //   value : "multiselect",
             //   label : "Multi select"
             // }
             ],
-            defaultValue : BUTTON_RENDER
+            defaultValue : BUTTON_RENDER,
+            change: function(data, classobject) {
+              if(data.renderAs == RADIOBUTTON_RENDERER) {
+                classobject.properties.alwaysOneSelected = true;
+              }
+            },
           },
           showState: {
             type: "boolean",
