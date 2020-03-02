@@ -297,13 +297,26 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
           return data.qListObjectDef && data.qListObjectDef.qLibraryId;
         }
       },
-      label : {
+      labelTxt : {
         type : "string",
         ref : "qListObjectDef.qDef.qFieldLabels.0",
         label : "Label",
         translation : "Common.Label",
-        show : true
-      },
+        show : function(data) {
+          return data.qListObjectDef.qDef.qFieldLabels.length > 0 && data.qListObjectDef.qDef.qFieldLabels[0];
+        }
+      },      
+      label : {
+        type : "string",
+        ref : "qListObjectDef.qDef.qLabelExpression",
+        label : "Label",
+        component : "expression",
+        expression: "optional",
+        translation : "Common.Label",
+        show : function(data) {
+          return data.qListObjectDef.qDef.qFieldLabels.length == 0 || !data.qListObjectDef.qDef.qFieldLabels[0];
+        }
+      },      
       field : {
         type : "string",
         component : "expression",
@@ -315,11 +328,11 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
         show : function (a) {
           return !a.qListObjectDef.qLibraryId
         },
-        change : function (a) {
-          var b = a.qListObjectDef.qDef;
-          b.qFieldLabels || (b.qFieldLabels = []),
-          b.qFieldLabels[0] = b.qFieldDefs[0]
-        }
+        // change : function (a) {
+        //   var b = a.qListObjectDef.qDef;
+        //   b.qFieldLabels || (b.qFieldLabels = []),
+        //   b.qFieldLabels[0] = b.qFieldDefs[0]
+        // }
       },
       expression : {
         type : "string",
