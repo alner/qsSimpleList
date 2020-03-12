@@ -34,5 +34,5 @@ export default {
   renderAs: "button",
   alwaysOneSelected: false,
   lockSelection: false,
-  itemsLayout: "v"
+  itemsLayout: "v",
 }

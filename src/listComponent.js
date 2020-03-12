@@ -15,6 +15,7 @@ import { createPopupService } from './popupService.js';
 import { selectionEvents } from './selectionEvents';
 import applyActions, {filterExcluded, isSelectedItem, isOptionalItem, getFieldValue} from './actions';
 import SenseRadioButtonComponent from './senseRadiobutton';
+import {alignmentStyles} from './stylesFuncs';
 //"jsx!./multiselect.js"
 
 // Register default renderer
@@ -117,6 +118,9 @@ class ListComponent extends Component {
         showState,
         expValuesInsteadOfField,
         alwaysOneSelected,
+        centerHorizontal,
+        centerVertical,
+        spaceEvenly
       } = this.props.options;
       const renderAs = this.state.renderAs || this.props.options.renderAs;
 
@@ -146,6 +150,9 @@ class ListComponent extends Component {
           transparentStyle={transparentStyle}
           itemsLayout={itemsLayout}
           showState={showState}
+          centerHorizontal={centerHorizontal}
+          centerVertical={centerVertical}
+          spaceEvenly={spaceEvenly}
           />);
       });
 
@@ -282,14 +289,43 @@ class ListComponent extends Component {
               isPopup={this.popupService.isPopupShow()}
               isHidden={isPopupHiddenInCompactMode}
               options={{
+                ...this.props.options,
                 alwaysOneSelected: this.isAlwaysOneSelected(),
               }}
             >
             {components}
             </Container>
           );
-        else
+        else {
         // const paddingLeft = isPopup || isScroll ? "47px" : "0"
+          const styles = {display: "inline-block", width: "100%", position: "relative"};
+          alignmentStyles(styles, this.props.options);
+          // const centerHorizontal = this.props.options.centerHorizontal;
+          // const centerVertical = this.props.options.centerVertical;
+          // const itemsLayout = this.props.options.itemsLayout;          
+          // if(centerHorizontal) {
+          //   styles.display = 'flex';
+          //   styles.height = 'auto';
+          //   styles.justifyContent = 'center';
+          //   //styles.textAlign = 'center';
+          //   if(this.props.options.spaceEvenly)
+          //     styles.justifyContent = 'space-evenly';
+
+          //   if(itemsLayout == 'v') {
+          //     styles.height = '100%';
+          //     styles.flexDirection = 'column';
+          //   }
+          // }
+          // if(centerVertical) {
+          //   styles.display = 'flex';
+          //   styles.height = '100%';
+          //   styles.alignItems = 'center';
+          //   if(this.props.options.spaceEvenly)
+          //     styles.justifyContent = 'space-evenly';            
+          //   if(itemsLayout == 'v')
+          //     styles.flexDirection = 'column';            
+          // }
+
           containerComponent = (
             <form ref={(c) => this._container = c }
                 {...this.eventsInjector()}
@@ -332,14 +368,16 @@ class ListComponent extends Component {
                 */
                 style={{
                   paddingLeft: isScrollOrPopup ? "47px" : "0px",
+                  height: '100%',
                   visibility: isPopupHiddenInCompactMode /*|| this.state.isChanging*/ ? 'hidden' : 'visible'
                 }}
               >
-              <div style={{display: "inline-block", width: "100%", position: "relative", height: "100%", }}>
+              <div style={styles}>
               {components}
               </div>
             </form>
           );
+        }
 
         let expandComponent;
         if(isExpandButtonShow) {

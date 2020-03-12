@@ -8,10 +8,17 @@ export default class SenseRadioButtonComponent extends Component {
       var renderAs = this.props.renderAs;
       var itemsLayout = this.props.itemsLayout;
       var isSelected = this.props.isSelected;
+      var centerHorizontal = this.props.centerHorizontal;
 
       var itemStyle = {margin: "2px"};
+      if(centerHorizontal && itemsLayout === "h") {
+        itemStyle.display = 'inline-block';
+      } else
       if(itemsLayout === "h") {
         itemStyle.float = "left";
+      } else
+      if(centerHorizontal && itemsLayout === 'v') {
+        itemStyle.display = 'block';
       }
 
       var checkStyle = {};

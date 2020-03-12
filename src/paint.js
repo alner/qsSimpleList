@@ -55,8 +55,8 @@ export default function setupPaint({ Qlik }) {
       const selectValues = self.backendApi.selectValues.bind(self.backendApi);
 //      const variableAPI = app.variable;
       const alwaysOneSelected = layout.alwaysOneSelected || (layout.renderAs === 'select');
-      const selectionColor = 'rgb(70, 198, 70)';
-      const backendApi = self.backendApi;
+      const selectionColor = (layout.color && layout.color.color) || '#009845';
+      //const backendApi = self.backendApi;
       const subscribers = self.subscribers;
       let options = {
         ...layout,

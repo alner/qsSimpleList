@@ -1,10 +1,16 @@
 import {h, Component} from 'preact';
 import Renderers from './renderers';
+import {alignmentStyles} from './stylesFuncs';
 
 export default class SelectComponent extends Component {
     render() {
       const width = this.props.itemWidth;
       const isChanging = this.props.isChanging;
+      const cStyles = {
+        width: '100%'
+      };
+      alignmentStyles(cStyles, this.props.options);
+
       let style = {
         width: "100%"
       };
@@ -27,21 +33,26 @@ export default class SelectComponent extends Component {
       if(width) style.width = width;
 
       return (
-        <select ref={(c) => this._select = c}
-        onChange={(e)=> {
-          this.props.changeHandler(e, {
-              value: e.target.value,
-              text: e.target.options[e.target.selectedIndex].text
-          });
-        }}
-        onTouchStart={() => {
-          // prevent strange behavior on iOS
-          // (without it needs two taps, first tap - focus, second - open select)
-          const element = this._select;
-          if(element) element.focus();
-        }}
-        value={selectedValue}
-        className={className} style={style}>{this.props.children}</select>);
+        <div style={cStyles}>
+          <select ref={(c) => this._select = c}
+            onChange={(e)=> {
+              this.props.changeHandler(e, {
+                  value: e.target.value,
+                  text: e.target.options[e.target.selectedIndex].text
+              });
+            }}
+            onTouchStart={() => {
+              // prevent strange behavior on iOS
+              // (without it needs two taps, first tap - focus, second - open select)
+              const element = this._select;
+              if(element) element.focus();
+            }}
+            value={selectedValue}
+            className={className} style={style}>
+              {this.props.children}
+          </select>
+        </div>
+      );
     }
 };
 

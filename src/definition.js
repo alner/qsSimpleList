@@ -508,6 +508,11 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
     }
   };
 
+  const DEFAULT_SEL_COLOR = {
+    color: "#009845",
+    // index: -1,
+  };
+
   let settings = {
     type: "items",
     uses: "settings",
@@ -660,6 +665,55 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
               return (data.renderAs === 'button');
             }
           },
+          horizontalCenterContent: {
+            type: "boolean",
+            label: function(data){
+              return 'Center direction "' + (data.itemsLayout == 'v' ? 'Vertical':'Horizontal') + '"';
+            },
+            ref: "centerHorizontal",
+            defaultValue: false,
+            show: function(data) {
+              return (data.renderAs === CHECKBOX_RENDER 
+                || data.renderAs === RADIOBUTTON_RENDERER
+                || data.renderAs === SWITCH_RENDER);
+            }
+          },
+          verticalCenterContent: {
+            type: "boolean",
+            label: function(data){
+              return 'Center direction "' + (data.itemsLayout == 'h' ? 'Vertical':'Horizontal') + '"';
+            },            
+            ref: "centerVertical",
+            defaultValue: false,
+            // show: function(data) {
+            //   return (data.renderAs === CHECKBOX_RENDER 
+            //     || data.renderAs === RADIOBUTTON_RENDERER
+            //     || data.renderAs === SWITCH_RENDER
+            //     || data.renderAs === BUTTON_RENDER);
+            // }
+          },
+          spaceEvenly: {
+            type: "boolean",
+            label: "Space evenly",
+            ref: "spaceEvenly",
+            defaultValue: false,
+            show: function(data) {
+              return (data.centerVertical || data.centerHorizontal) 
+                && (data.renderAs === CHECKBOX_RENDER 
+                  || data.renderAs === RADIOBUTTON_RENDERER
+                  || data.renderAs === SWITCH_RENDER);
+            }
+          },
+          selectionColor : {
+            ref : "color",
+            translation : "Selection color",
+            type : "object",
+            component : "color-picker",
+            show: function(data) {
+              return !!data.color;
+            },
+            defaultValue : DEFAULT_SEL_COLOR
+          },
           hideCondition: {
             ref: "hideCondition",
             type: "integer",
@@ -686,15 +740,7 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
             }
           },
           */
-          /*
-          selectionColor : {
-            ref : "selectionColor",
-            translation : "Selection color",
-            type : "integer",
-            component : "color-picker",
-            defaultValue : 6
-          }
-          */
+
         }
       }
     }

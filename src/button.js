@@ -1,6 +1,7 @@
 import {h, Component} from 'preact';
 import Renderers from './renderers';
 import {selectionEvents} from './selectionEvents';
+import {alignmentStyles} from './stylesFuncs';
 
 export default class ButtonComponent extends Component {
     render() {
@@ -78,7 +79,7 @@ export class ButtonGroupComponent extends Component {
   }
   render(props) {
     // const width = this.props.containerWidth;
-    const { titleWidth, isChanging, isScroll, isPopup, isHidden } = this.props;
+    const { titleWidth, /*isChanging,*/ isScroll, isPopup, isHidden } = this.props;
     const paddingLeft = isPopup || isScroll ? 47 : 0;
     let shift = paddingLeft;
     if(titleWidth)
@@ -95,6 +96,8 @@ export class ButtonGroupComponent extends Component {
     if(isPopup || isScroll) {
       style.paddingLeft = `${paddingLeft}px`;
     }
+
+    alignmentStyles(style, this.props.options);
 
     // if(width) {
     //   style.width = width;

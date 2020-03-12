@@ -27,7 +27,7 @@ export default class SenseCheckBoxComponent extends Component {
       var itemsLayout = this.props.itemsLayout;
       var isSelected = this.props.isSelected;
 
-      var itemStyle = {padding: "2px", display: 'block'}; // margin: "2px",
+      var itemStyle = {margin: "2px", display: 'block'}; // margin: "2px",
       var floatLeftStyle = {"float":"left"};
       var labelStyle = {"float":"left", "margin": "2px"};
       if(isSelected)
