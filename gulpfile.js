@@ -79,9 +79,9 @@ gulp.task('zip-build', function(){
     .pipe(gulp.dest('build'));
 });
 
-gulp.task('deploy', function(){
-  return gulp.src(buildDest + "/**/*").pipe(gulp.dest(deployDest));
-});
+// gulp.task('deploy', function(){
+//   return gulp.src(buildDest + "/**/*").pipe(gulp.dest(deployDest));
+// });
 
 gulp.task('development', ['qext', 'less2css', /*'css',*/ 'watch', 'devServer']);
 gulp.task('production', function(callback) {
