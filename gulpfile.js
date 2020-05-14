@@ -87,8 +87,8 @@ gulp.task('development', ['qext', 'less2css', /*'css',*/ 'watch', 'devServer']);
 gulp.task('production', function(callback) {
   runSequence(['qext', 'less2css', /*'css',*/ 'remove-build-zip'],
     'build',
-    'zip-build',
-    'deploy'
+    'zip-build'
+    //'deploy'
     );
 });
 

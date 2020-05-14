@@ -321,7 +321,7 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
         type : "string",
         component : "expression",
         expression : "always",
-        expressionType : "dimension",
+        //expressionType : "dimension",
         ref : "qListObjectDef.qDef.qFieldDefs.0",
         //label : "Field",
         translation : "Common.Field",

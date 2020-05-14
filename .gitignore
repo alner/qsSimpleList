@@ -4,3 +4,4 @@ VisualizationTemplate.qext
 *.notused
 *.map
 *.log
+.DS_Store
