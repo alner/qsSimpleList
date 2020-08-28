@@ -76,6 +76,8 @@ export default function setupPaint({ Qlik }) {
         isResize,
         expValuesInsteadOfField,
         subscribers,
+        width: $element.width(),
+        height: $element.height(),
       };
 
       if(layout.hideCondition == -1)

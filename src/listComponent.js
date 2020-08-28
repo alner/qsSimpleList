@@ -81,11 +81,10 @@ class ListComponent extends Component {
       this.recalcSize();
     }
 
-    componentDidUpdate(){
-      if(this.props.options.isResize
-      //   && (
-      //    window.innerWidth != this.state.windowWidth
-      // || window.innerHeight != this.state.windowHeight)
+    componentDidUpdate(prevProps){
+      if((this.props.options.isResize
+        && (prevProps.options.width != this.props.options.width
+          || prevProps.options.height != this.props.options.height))
       || this.state.changeType === CHANGE_COMMIT
       || this.state.changeType === CHANGE_SCROLL
       || this.state.changeType === CHANGE_SIZE

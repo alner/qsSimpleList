@@ -8,8 +8,8 @@
   "homepage": "https://github.com/alner/NewQlikSenseVisualizationTemplate",
   "bugs": "https://github.com/alner/NewQlikSenseVisualizationTemplate/issues",
   "scripts": {
-    "build": "set NODE_ENV=production&& gulp production",
-    "dev": "set NODE_ENV=development&& gulp development"
+    "build": "NODE_ENV=production gulp production",
+    "dev": "NODE_ENV=development gulp development"
   },
   "author": "Alexander Nerush <ale.nerush@gmail.com>",
   "license": "MIT",
