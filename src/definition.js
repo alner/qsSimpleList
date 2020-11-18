@@ -311,7 +311,8 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
         ref : "qListObjectDef.qDef.qLabelExpression",
         label : "Label",
         component : "expression",
-        expression: "optional",
+        // expression: "optional",
+        expressionType : "measure",
         translation : "Common.Label",
         show : function(data) {
           return data.qListObjectDef.qDef.qFieldLabels.length == 0 || !data.qListObjectDef.qDef.qFieldLabels[0];
@@ -320,8 +321,8 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
       field : {
         type : "string",
         component : "expression",
-        expression : "always",
-        //expressionType : "dimension",
+        // expression : "always",
+        expressionType : "dimension",
         ref : "qListObjectDef.qDef.qFieldDefs.0",
         //label : "Field",
         translation : "Common.Field",
@@ -339,7 +340,6 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
         //expression : "always",
         component : "expression",
         expressionType : "measure",
-        //expressionType : "dimension",
         ref : "qListObjectDef.qExpressions.0.qExpr", 
         translation : "Common.Measure",
       },
