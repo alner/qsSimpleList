@@ -311,7 +311,7 @@ export default function setupDefinition({ Qlik, setAlwaysOneSelectedValue }) {
         ref : "qListObjectDef.qDef.qLabelExpression",
         label : "Label",
         component : "expression",
-        // expression: "optional",
+        expression: "optional",
         expressionType : "measure",
         translation : "Common.Label",
         show : function(data) {
