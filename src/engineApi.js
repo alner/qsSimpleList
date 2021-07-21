@@ -181,5 +181,7 @@ function FieldAPIMethod(app, data, method, params) {
 export function CallFieldAPIMethod(app, fieldname, method, params,  qStateName="") {
     return GetField(app, fieldname, qStateName)
     .then(data => FieldAPIMethod(app, data, method, params))
-    .catch(e => console.error(e));
+    .catch(function(e) {
+      console.error(e);
+    });
 }
