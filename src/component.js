@@ -57,6 +57,9 @@ define(dependencies.concat("css!./styles.css"),
               })
           }//if
         })
+        .catch(function(e) {
+          console.error(e);
+        })
       }
     });
     const lifecycleMethods = setupPaint({ Qlik });

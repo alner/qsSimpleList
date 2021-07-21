@@ -35,6 +35,9 @@ export default function setupPaint({ Qlik }) {
                 "params": {},
               })
             })
+          .catch(function(e) {
+            console.error(e);
+          })
       }
       const unlockField = function() {
         return app.global.session.rpc({
@@ -50,6 +53,9 @@ export default function setupPaint({ Qlik }) {
                 "method": "Unlock",
                 "params": {},
               })
+          })
+          .catch(function(e) {
+            console.error(e);
           })
       }
       const selectValues = self.backendApi.selectValues.bind(self.backendApi);
