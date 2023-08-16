@@ -15,7 +15,7 @@
   "license": "MIT",
   "repository": "https://github.com/alner/NewQlikSenseVisualizationTemplate",
   "engines": {
-    "node":"6.6.0"
+    "node": "18.16.0"
   },
   "dependencies": {
     "lodash.isequal": "^4.2.0",
@@ -50,5 +50,8 @@
     "style-loader": "^0.12.3",
     "webpack": "^1.14.0",
     "webpack-dev-server": "^1.16.3"
+  },
+  "overrides": {
+    "graceful-fs": "^4.2.11"
   }
 }

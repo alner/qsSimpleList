@@ -33,21 +33,14 @@ export default class SelectComponent extends Component {
       if(width) style.width = width;
 
       return (
-        <div style={cStyles}>
+        <div style={cStyles}>          
           <select 
-            //ref={(c) => this._select = c}
             onChange={(e)=> {
               this.props.changeHandler(e, {
                   value: e.target.value,
                   text: e.target.options[e.target.selectedIndex].text
               });
             }}
-            // onTouchStart={() => {
-            //   // prevent strange behavior on iOS
-            //   // (without it needs two taps, first tap - focus, second - open select)
-            //   const element = this._select;
-            //   if(element) element.focus();
-            // }}
             value={selectedValue}
             className={className} style={style}>
               {this.props.children}
